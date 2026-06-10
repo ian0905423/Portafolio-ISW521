@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="AcueductosIoT — Sistema de Monitoreo Hídrico en Tiempo Real para Cooperativas de Acueductos de Costa Rica." />
+    <title>AcueductosIoT — Dashboard de Monitoreo Hídrico</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+
+    <!-- ================================================
+         TOAST CONTAINER — Notificaciones en tiempo real
+    ================================================= -->
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+    <!-- ================================================
+         BARRA DE NAVEGACIÓN — Paleta Costa Rica
+         Main Axis: justify-content: space-between
+         Cross Axis: align-items: center
+         Autor: Ian Angulo Matamoros
+    ================================================= -->
+    <nav class="navbar" aria-label="Navegación principal">
+
+      <!-- Logo con bandera CR integrada -->
+      <div class="nav-logo">
+        <div class="cr-flag-mini" aria-hidden="true">
+          <span class="flag-stripe flag-blue"></span>
+          <span class="flag-stripe flag-white"></span>
+          <span class="flag-stripe flag-red"></span>
+          <span class="flag-stripe flag-white"></span>
+          <span class="flag-stripe flag-blue"></span>
+        </div>
+        <span class="logo-icon" aria-hidden="true">💧</span>
+        <span class="logo-text">AcueductosIoT</span>
+        <span class="logo-badge">CR</span>
+      </div>
+
+      <!-- Links de navegación principales -->
+      <ul class="nav-links" role="list">
+        <li><a href="#" class="nav-link active" aria-current="page">Inicio</a></li>
+        <li><a href="#" class="nav-link">Sensores</a></li>
+        <li><a href="#" class="nav-link">Alertas <span class="nav-alert-dot" id="navAlertCount" aria-label="3 alertas activas">3</span></a></li>
+        <li><a href="#" class="nav-link">Reportes</a></li>
+      </ul>
+
+      <!-- Acciones del navbar -->
+      <div class="nav-actions">
+        <!-- Indicador de conexión en vivo -->
+        <div class="live-indicator" title="Datos en tiempo real" aria-label="Sistema en línea, datos actualizándose">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span class="live-text">EN VIVO</span>
+        </div>
+        <!-- Reloj en tiempo real -->
+        <time id="navClock" class="nav-clock" aria-label="Hora actual" datetime=""></time>
+        <button class="btn-logout" aria-label="Cerrar sesión del sistema">Cerrar Sesión</button>
+      </div>
+
+    </nav>
+
+    <!-- ================================================
+         LAYOUT PRINCIPAL: 3 COLUMNAS
+         flex: 1 / flex: 3 / flex: 1
+    ================================================= -->
+    <div class="dashboard-layout">
+
+      <!-- Sidebar izquierdo -->
+      <aside class="sidebar" aria-label="Menú lateral de navegación">
+        <nav class="sidebar-nav">
+          <p class="sidebar-label">NAVEGACIÓN</p>
+          <ul role="list">
+            <li class="sidebar-item active" role="listitem" tabindex="0" aria-current="true">
+              <span class="sidebar-icon" aria-hidden="true">📊</span> Resumen
+            </li>
+            <li class="sidebar-item" role="listitem" tabindex="0">
+              <span class="sidebar-icon" aria-hidden="true">💧</span> Tanques
+            </li>
+            <li class="sidebar-item" role="listitem" tabindex="0">
+              <span class="sidebar-icon" aria-hidden="true">⚡</span> Presiones
+            </li>
+            <li class="sidebar-item" role="listitem" tabindex="0">
+              <span class="sidebar-icon" aria-hidden="true">🧪</span> Calidad
+            </li>
+            <li class="sidebar-item" role="listitem" tabindex="0">
+              <span class="sidebar-icon" aria-hidden="true">🗺️</span> Sectores
+            </li>
+            <li class="sidebar-item" role="listitem" tabindex="0">
+              <span class="sidebar-icon" aria-hidden="true">⚙️</span> Configuración
+            </li>
+          </ul>
+        </nav>
+
+        <!-- KPIs rápidos del sidebar -->
+        <div class="sidebar-kpis" aria-label="Indicadores clave">
+          <p class="sidebar-label">INDICADORES</p>
+          <div class="kpi-mini">
+            <span class="kpi-mini__label">Eficiencia Red</span>
+            <span class="kpi-mini__value kpi-ok" id="sideEfficiency">94.2%</span>
+          </div>
+          <div class="kpi-mini">
+            <span class="kpi-mini__label">Sensores Activos</span>
+            <span class="kpi-mini__value kpi-ok" id="sideSensors">18/20</span>
+          </div>
+          <div class="kpi-mini">
+            <span class="kpi-mini__label">Alertas Hoy</span>
+            <span class="kpi-mini__value kpi-warn" id="sideAlerts">3</span>
+          </div>
+        </div>
+
+        <div class="sidebar-footer">
+          <p class="sidebar-version">v2.4.1 — Estable</p>
+          <p class="sidebar-author">Cooperativa Hídrica<br>Guanacaste, CR 🇨🇷</p>
+        </div>
+      </aside>
+
+      <!-- Área principal de contenido -->
+      <main class="main-content" id="main" role="main">
+
+        <!-- Header principal -->
+        <header class="main-header">
+          <div class="main-header__text">
+            <h1 class="main-title">Dashboard de Monitoreo</h1>
+            <p class="main-subtitle">
+              Red hídrica — Guanacaste · 
+              <span class="update-time" id="lastUpdate">Última actualización: hace 2 min</span>
+            </p>
+          </div>
+          <div class="main-header__actions">
+            <span class="status-badge status-ok" role="status" aria-live="polite" id="systemStatus">
+              <span aria-hidden="true">●</span> Sistema Operativo
+            </span>
+            <button class="btn-refresh" id="btnRefresh" aria-label="Actualizar datos ahora" title="Forzar actualización">
+              <span class="refresh-icon" aria-hidden="true">🔄</span> Actualizar
+            </button>
+          </div>
+        </header>
+
+        <!-- ============================================
+             BANDA DE MÉTRICAS RÁPIDAS (nueva funcionalidad)
+             Resumen ejecutivo de la red en tiempo real
+        ============================================= -->
+        <section class="metrics-band" aria-label="Métricas ejecutivas de la red">
+          <div class="metric-chip metric-chip--blue">
+            <span class="metric-chip__icon" aria-hidden="true">🏗️</span>
+            <div>
+              <p class="metric-chip__label">Sectores Activos</p>
+              <p class="metric-chip__value" id="metSectors">12 / 14</p>
+            </div>
+          </div>
+          <div class="metric-chip metric-chip--red">
+            <span class="metric-chip__icon" aria-hidden="true">⚠️</span>
+            <div>
+              <p class="metric-chip__label">Alertas Críticas</p>
+              <p class="metric-chip__value" id="metAlerts">1</p>
+            </div>
+          </div>
+          <div class="metric-chip metric-chip--white">
+            <span class="metric-chip__icon" aria-hidden="true">💦</span>
+            <div>
+              <p class="metric-chip__label">Consumo Hoy</p>
+              <p class="metric-chip__value" id="metConsumption">4,820 m³</p>
+            </div>
+          </div>
+          <div class="metric-chip metric-chip--blue">
+            <span class="metric-chip__icon" aria-hidden="true">🔋</span>
+            <div>
+              <p class="metric-chip__label">Bombas Activas</p>
+              <p class="metric-chip__value" id="metPumps">5 / 6</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================
+             CUADRÍCULA DE SENSORES IoT
+             flex-wrap: wrap + gap: 16px
+             flex-basis: calc(33.333% - 16px)
+        ============================================= -->
+        <section class="sensor-grid" aria-label="Tarjetas de sensores IoT">
+
+          <!-- Tarjeta 1: Nivel Tanque -->
+          <article class="sensor-card card-level" aria-label="Sensor de nivel de tanque principal">
+            <div class="card-header">
+              <span class="card-icon" aria-hidden="true">💧</span>
+              <span class="card-badge badge-normal" role="status">Normal</span>
+            </div>
+            <p class="sensor-value" id="valTank" aria-label="73 por ciento">73<span class="unit">%</span></p>
+            <h3 class="sensor-title">Nivel de Tanque Principal</h3>
+            <p class="sensor-label">Sector A · Actualizado hace 2 min</p>
+            <div class="progress-bar" role="progressbar" aria-valuenow="73" aria-valuemin="0" aria-valuemax="100" aria-label="Nivel de tanque 73%">
+              <div class="progress-fill" id="fillTank" style="width: 73%;"></div>
+            </div>
+            <div class="card-trend" aria-label="Tendencia al alza">
+              <span class="trend-arrow trend-up" aria-hidden="true">↑</span>
+              <span class="trend-text">+2.1% vs ayer</span>
+            </div>
+          </article>
+
+          <!-- Tarjeta 2: Presión -->
+          <article class="sensor-card card-pressure" aria-label="Sensor de presión de red">
+            <div class="card-header">
+              <span class="card-icon" aria-hidden="true">⚡</span>
+              <span class="card-badge badge-warning" role="status">Revisar</span>
+            </div>
+            <p class="sensor-value sensor-value--warn" id="valPressure" aria-label="42 PSI">42<span class="unit">PSI</span></p>
+            <h3 class="sensor-title">Presión de Red</h3>
+            <p class="sensor-label">Calle 2 · Mínimo: 45 PSI</p>
+            <div class="progress-bar" role="progressbar" aria-valuenow="42" aria-valuemin="0" aria-valuemax="100" aria-label="Presión 42 de 100">
+              <div class="progress-fill warning" id="fillPressure" style="width: 42%;"></div>
+            </div>
+            <div class="card-trend" aria-label="Tendencia a la baja">
+              <span class="trend-arrow trend-down" aria-hidden="true">↓</span>
+              <span class="trend-text">-5.3 PSI en 1h</span>
+            </div>
+          </article>
+
+          <!-- Tarjeta 3: Calidad -->
+          <article class="sensor-card card-quality" aria-label="Sensor de calidad del agua">
+            <div class="card-header">
+              <span class="card-icon" aria-hidden="true">🧪</span>
+              <span class="card-badge badge-normal" role="status">Normal</span>
+            </div>
+            <p class="sensor-value" id="valQuality" aria-label="0.7 miligramos por litro">0.7<span class="unit">mg/L</span></p>
+            <h3 class="sensor-title">Calidad del Agua</h3>
+            <p class="sensor-label">Cloro residual · Rango: 0.5–1.0</p>
+            <div class="progress-bar" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" aria-label="Calidad 70%">
+              <div class="progress-fill" id="fillQuality" style="width: 70%;"></div>
+            </div>
+            <div class="card-trend" aria-label="Estable">
+              <span class="trend-arrow trend-stable" aria-hidden="true">→</span>
+              <span class="trend-text">Estable últimas 6h</span>
+            </div>
+          </article>
+
+          <!-- Tarjeta 4: Caudal -->
+          <article class="sensor-card card-flow" aria-label="Sensor de caudal de entrada">
+            <div class="card-header">
+              <span class="card-icon" aria-hidden="true">🌊</span>
+              <span class="card-badge badge-normal" role="status">Normal</span>
+            </div>
+            <p class="sensor-value" id="valFlow" aria-label="128 litros por minuto">128<span class="unit">L/min</span></p>
+            <h3 class="sensor-title">Caudal de Entrada</h3>
+            <p class="sensor-label">Naciente Sur · Óptimo: 100–150</p>
+            <div class="progress-bar" role="progressbar" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100" aria-label="Caudal 65%">
+              <div class="progress-fill" id="fillFlow" style="width: 65%;"></div>
+            </div>
+            <div class="card-trend" aria-label="Tendencia al alza">
+              <span class="trend-arrow trend-up" aria-hidden="true">↑</span>
+              <span class="trend-text">+12 L/min en 30min</span>
+            </div>
+          </article>
+
+          <!-- Tarjeta 5: Temperatura -->
+          <article class="sensor-card card-temp" aria-label="Sensor de temperatura del agua">
+            <div class="card-header">
+              <span class="card-icon" aria-hidden="true">🌡️</span>
+              <span class="card-badge badge-normal" role="status">Normal</span>
+            </div>
+            <p class="sensor-value" id="valTemp" aria-label="22 grados Celsius">22<span class="unit">°C</span></p>
+            <h3 class="sensor-title">Temperatura del Agua</h3>
+            <p class="sensor-label">Tanque Central · Rango: 15–25°C</p>
+            <div class="progress-bar" role="progressbar" aria-valuenow="55" aria-valuemin="0" aria-valuemax="100" aria-label="Temperatura 55%">
+              <div class="progress-fill" id="fillTemp" style="width: 55%;"></div>
+            </div>
+            <div class="card-trend" aria-label="Estable">
+              <span class="trend-arrow trend-stable" aria-hidden="true">→</span>
+              <span class="trend-text">Sin variación 3h</span>
+            </div>
+          </article>
+
+          <!-- Tarjeta 6: Válvula -->
+          <article class="sensor-card card-valve" aria-label="Estado de válvula de emergencia">
+            <div class="card-header">
+              <span class="card-icon" aria-hidden="true">🔧</span>
+              <span class="card-badge badge-ok" role="status">Activa</span>
+            </div>
+            <p class="sensor-value sensor-text" id="valValve" aria-label="Válvula abierta">Abierta</p>
+            <h3 class="sensor-title">Válvula de Emergencia</h3>
+            <p class="sensor-label">Nodo Principal · Operación normal</p>
+            <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Válvula 100% abierta">
+              <div class="progress-fill ok" id="fillValve" style="width: 100%;"></div>
+            </div>
+            <div class="card-trend" aria-label="Estable">
+              <span class="trend-arrow trend-stable" aria-hidden="true">→</span>
+              <span class="trend-text">Operación continua</span>
+            </div>
+          </article>
+
+        </section>
+
+        <!-- ============================================
+             PANEL DE CONSUMO DIARIO (nueva funcionalidad)
+             Gráfico de barras SVG en tiempo real
+        ============================================= -->
+        <section class="consumption-panel" aria-label="Panel de consumo diario">
+          <div class="panel-header">
+            <h2 class="panel-title-text">📈 Consumo Diario — Últimas 8 horas</h2>
+            <div class="panel-legend" aria-label="Leyenda del gráfico">
+              <span class="legend-dot legend-dot--blue" aria-hidden="true"></span>
+              <span class="legend-label">Consumo (m³)</span>
+              <span class="legend-dot legend-dot--red" aria-hidden="true"></span>
+              <span class="legend-label">Umbral máximo</span>
+            </div>
+          </div>
+          <div class="chart-container" role="img" aria-label="Gráfico de barras de consumo de agua por hora">
+            <!-- Umbral máximo -->
+            <div class="chart-threshold" title="Umbral máximo: 700 m³/h" aria-hidden="true">
+              <span class="threshold-label">Máx 700</span>
+            </div>
+            <!-- Barras del gráfico -->
+            <div class="bar-chart" id="barChart" aria-hidden="true">
+              <div class="bar-group">
+                <div class="bar-fill" style="--h:68%" title="03:00 — 476 m³"></div>
+                <span class="bar-label">03h</span>
+              </div>
+              <div class="bar-group">
+                <div class="bar-fill" style="--h:45%" title="04:00 — 315 m³"></div>
+                <span class="bar-label">04h</span>
+              </div>
+              <div class="bar-group">
+                <div class="bar-fill" style="--h:55%" title="05:00 — 385 m³"></div>
+                <span class="bar-label">05h</span>
+              </div>
+              <div class="bar-group">
+                <div class="bar-fill" style="--h:82%" title="06:00 — 574 m³"></div>
+                <span class="bar-label">06h</span>
+              </div>
+              <div class="bar-group">
+                <div class="bar-fill bar-fill--peak" style="--h:96%" title="07:00 — 672 m³"></div>
+                <span class="bar-label">07h</span>
+              </div>
+              <div class="bar-group">
+                <div class="bar-fill" style="--h:88%" title="08:00 — 616 m³"></div>
+                <span class="bar-label">08h</span>
+              </div>
+              <div class="bar-group">
+                <div class="bar-fill" style="--h:74%" title="09:00 — 518 m³"></div>
+                <span class="bar-label">09h</span>
+              </div>
+              <div class="bar-group">
+                <div class="bar-fill bar-fill--current" style="--h:69%" title="10:00 — 483 m³ (en curso)"></div>
+                <span class="bar-label">10h ▸</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================
+             MAPA DE SECTORES (nueva funcionalidad)
+             Representación visual de la red de distribución
+        ============================================= -->
+        <section class="sector-map" aria-label="Mapa de sectores de distribución hídrica">
+          <div class="panel-header">
+            <h2 class="panel-title-text">🗺️ Red de Distribución — Guanacaste</h2>
+            <div class="map-legend" aria-label="Leyenda del mapa">
+              <span class="map-dot map-dot--ok" aria-hidden="true"></span><span>Operativo</span>
+              <span class="map-dot map-dot--warn" aria-hidden="true"></span><span>Revisar</span>
+              <span class="map-dot map-dot--off" aria-hidden="true"></span><span>Fuera de línea</span>
+            </div>
+          </div>
+          <div class="sector-grid" role="list" aria-label="Estado de sectores">
+            <div class="sector-node sector-ok" role="listitem" aria-label="Sector A: Operativo">
+              <span class="sector-pulse" aria-hidden="true"></span>
+              <span class="sector-name">A</span>
+              <span class="sector-label">Sector A</span>
+              <span class="sector-value">73% Niv.</span>
+            </div>
+            <div class="sector-node sector-warn" role="listitem" aria-label="Sector B: Revisar presión">
+              <span class="sector-pulse sector-pulse--warn" aria-hidden="true"></span>
+              <span class="sector-name">B</span>
+              <span class="sector-label">Sector B</span>
+              <span class="sector-value">42 PSI ⚠</span>
+            </div>
+            <div class="sector-node sector-ok" role="listitem" aria-label="Sector C: Operativo">
+              <span class="sector-pulse" aria-hidden="true"></span>
+              <span class="sector-name">C</span>
+              <span class="sector-label">Sector C</span>
+              <span class="sector-value">89% Niv.</span>
+            </div>
+            <div class="sector-node sector-ok" role="listitem" aria-label="Sector D: Operativo">
+              <span class="sector-pulse" aria-hidden="true"></span>
+              <span class="sector-name">D</span>
+              <span class="sector-label">Sector D</span>
+              <span class="sector-value">61% Niv.</span>
+            </div>
+            <div class="sector-node sector-off" role="listitem" aria-label="Sector E: Fuera de línea">
+              <span class="sector-name">E</span>
+              <span class="sector-label">Sector E</span>
+              <span class="sector-value">Sin señal</span>
+            </div>
+            <div class="sector-node sector-ok" role="listitem" aria-label="Sector F: Operativo">
+              <span class="sector-pulse" aria-hidden="true"></span>
+              <span class="sector-name">F</span>
+              <span class="sector-label">Sector F</span>
+              <span class="sector-value">77% Niv.</span>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Panel de alertas derecho -->
+      <aside class="alert-panel" aria-label="Panel de alertas activas">
+
+        <h2 class="panel-title">
+          🔔 Alertas Activas
+          <span class="alert-count-badge" id="alertCountBadge" aria-label="3 alertas activas">3</span>
+        </h2>
+
+        <!-- Alerta crítica -->
+        <div class="alert alert-warning" role="alert" aria-label="Alerta: Presión baja en Sector B">
+          <span class="alert-icon" aria-hidden="true">⚠️</span>
+          <div class="alert-body">
+            <p class="alert-msg">Presión baja</p>
+            <p class="alert-detail">Sector B — Calle 2</p>
+            <time class="alert-time" datetime="2026-06-09">hace 8 min</time>
+          </div>
+          <button class="alert-dismiss" aria-label="Descartar alerta de presión baja" title="Descartar">✕</button>
+        </div>
+
+        <!-- Alerta ok -->
+        <div class="alert alert-ok" role="status" aria-label="Estado: Cloro en rango normal">
+          <span class="alert-icon" aria-hidden="true">✅</span>
+          <div class="alert-body">
+            <p class="alert-msg">Cloro en rango normal</p>
+            <p class="alert-detail">Verificado hace 5 min</p>
+            <time class="alert-time" datetime="2026-06-09">hace 5 min</time>
+          </div>
+        </div>
+
+        <!-- Alerta info -->
+        <div class="alert alert-info" role="status" aria-label="Información: Mantenimiento programado">
+          <span class="alert-icon" aria-hidden="true">ℹ️</span>
+          <div class="alert-body">
+            <p class="alert-msg">Mantenimiento programado</p>
+            <p class="alert-detail">Tanque A · Viernes 06:00</p>
+            <time class="alert-time" datetime="2026-06-13">Vie 13/06</time>
+          </div>
+        </div>
+
+        <!-- Alerta offline -->
+        <div class="alert alert-danger" role="alert" aria-label="Alerta: Sensor E sin señal">
+          <span class="alert-icon" aria-hidden="true">🔴</span>
+          <div class="alert-body">
+            <p class="alert-msg">Sensor E sin señal</p>
+            <p class="alert-detail">Sector E — nodo 12</p>
+            <time class="alert-time" datetime="2026-06-09">hace 24 min</time>
+          </div>
+          <button class="alert-dismiss" aria-label="Descartar alerta de sensor sin señal" title="Descartar">✕</button>
+        </div>
+
+        <div class="panel-divider" role="separator"></div>
+
+        <!-- Acciones rápidas (nueva funcionalidad) -->
+        <div class="quick-actions" aria-label="Acciones rápidas del sistema">
+          <p class="sidebar-label">ACCIONES RÁPIDAS</p>
+          <button class="quick-btn quick-btn--blue" id="btnExport" aria-label="Exportar reporte del día">
+            📄 Exportar Reporte
+          </button>
+          <button class="quick-btn quick-btn--red" id="btnEmergency" aria-label="Activar protocolo de emergencia">
+            🚨 Emergencia
+          </button>
+          <button class="quick-btn quick-btn--outline" id="btnNotify" aria-label="Notificar al equipo técnico">
+            📣 Notificar Equipo
+          </button>
+        </div>
+
+        <div class="panel-divider" role="separator"></div>
+
+        <!-- Resumen de cobertura -->
+        <div class="coverage-summary" aria-label="Resumen de cobertura de servicio">
+          <p class="sidebar-label">COBERTURA</p>
+          <div class="coverage-item">
+            <span class="coverage-label">Familias servidas</span>
+            <span class="coverage-value">2,847</span>
+          </div>
+          <div class="coverage-item">
+            <span class="coverage-label">Km de tubería</span>
+            <span class="coverage-value">142 km</span>
+          </div>
+          <div class="coverage-item">
+            <span class="coverage-label">Tiempo sin corte</span>
+            <span class="coverage-value kpi-ok" id="uptimeCounter">18d 4h</span>
+          </div>
+        </div>
+
+        <div class="panel-divider" role="separator"></div>
+        <p class="panel-footer">Ian Angulo Matamoros<br />ISW-521 · Lab #3<br /><span class="footer-cr">🇨🇷 Cooperativa Hídrica Guanacaste</span></p>
+
+      </aside>
+
+    </div>
+
+    <!-- Footer semántico -->
+    <footer class="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <p class="footer-copy">AcueductosIoT © 2026 — Sistema de Monitoreo Hídrico en Tiempo Real</p>
+        <div class="footer-band" aria-hidden="true">
+          <span class="fb fb--blue"></span>
+          <span class="fb fb--white"></span>
+          <span class="fb fb--red"></span>
+          <span class="fb fb--white"></span>
+          <span class="fb fb--blue"></span>
+        </div>
+        <p class="footer-credits">Desarrollado por Ian Angulo Matamoros · ISW-521 · Cooperativa Hídrica Guanacaste 🇨🇷</p>
+      </div>
+    </footer>
+
+    <script src="dashboard.js"></script>
+  </body>
+</html>
