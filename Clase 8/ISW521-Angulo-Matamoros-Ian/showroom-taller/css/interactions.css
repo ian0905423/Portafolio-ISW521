@@ -1,0 +1,844 @@
+/* ============================================================
+   interactions.css — Auto Style CR
+   Toda la interactividad 100% CSS puro — CERO JavaScript.
+   
+   Técnicas implementadas:
+   1. Grid Overlay — Cambio de ángulo via :checked + opacity
+   2. Radio Button Hack — Cambio de color via :checked + CSS var
+   3. Selector de modelo — Show/hide via :checked + visibility
+   4. @keyframes floatIn — Animación de entrada de la paleta
+   5. Efectos hover en controles del sidebar
+   ============================================================ */
+
+/* ══════════════════════════════════════════════════════════════
+   SECCIÓN 0: ESTADOS DEFAULT AL CARGAR
+   El HTML tiene checked por defecto:
+   - #model-corolla → Corolla visible, Hilux oculto
+   - #angle-corolla-front → imagen frontal del Corolla visible
+   - #color-blanco → color blanco perla activo
+   ══════════════════════════════════════════════════════════════ */
+
+/*
+   Estado inicial: Corolla GR visible por defecto.
+   El selector #model-corolla:checked ~ * .car-block-corolla
+   lo activará explícitamente, pero necesitamos que el Hilux
+   esté completamente oculto salvo cuando su radio esté checked.
+   
+   La clase .car-block maneja opacity:0 por default,
+   y los selectores :checked la activan a opacity:1.
+   La imagen .img-front tiene clase 'active' en el HTML
+   que le da opacity:1 como valor inicial visible.
+   
+   Cuando el usuario cambia de ángulo, los selectores :checked
+   controlan qué imagen es visible (opacity:1 o 0).
+*/
+
+/* 
+   Regla base: la imagen "active" del HTML es visible por defecto.
+   Pero cuando cualquier radio de ángulo está checked, los
+   selectores explícitos toman control total.
+   Esto se maneja con la transición suave de 0.3s.
+*/
+
+/* Grupos de ángulos: mostrar solo el del modelo activo */
+.angle-group-hilux  { display: none; }
+.angle-group-corolla { display: block; }
+
+#model-hilux:checked ~ .app-wrapper .angle-group-hilux,
+#model-hilux:checked ~ * .angle-group-hilux {
+  display: block;
+}
+
+#model-hilux:checked ~ .app-wrapper .angle-group-corolla,
+#model-hilux:checked ~ * .angle-group-corolla {
+  display: none;
+}
+
+/* Color default: Blanco Perla activo */
+#color-blanco:checked ~ .app-wrapper .color-name-blanco,
+#color-blanco:checked ~ * .color-name-blanco {
+  display: inline;
+}
+
+#color-blanco:checked ~ .app-wrapper .price-blanco,
+#color-blanco:checked ~ * .price-blanco {
+  display: block;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SECCIÓN 1: CONTROLES DEL SIDEBAR (Modelo + Ángulo)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Inputs radio ocultos del sidebar ─────────────────────── */
+.model-input,
+.angle-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* ── Botones del sidebar (labels) ─────────────────────────── */
+.model-btn,
+.angle-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-base);
+  margin-bottom: var(--space-sm);
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Efecto shimmer al hover */
+.model-btn::before,
+.angle-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(99,102,241,0.08) 0%, transparent 100%);
+  opacity: 0;
+  transition: var(--transition-fast);
+}
+
+.model-btn:hover::before,
+.angle-btn:hover::before {
+  opacity: 1;
+}
+
+.model-btn:hover,
+.angle-btn:hover {
+  background: var(--bg-input);
+  border-color: var(--border-subtle);
+  transform: translateX(2px);
+}
+
+/* Icono del botón */
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: var(--transition-base);
+  flex-shrink: 0;
+}
+
+.btn-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.btn-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.btn-sub {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+/* Indicador activo (punto) */
+.btn-indicator {
+  margin-left: auto;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--text-muted);
+  transition: var(--transition-base);
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SECCIÓN 2: SELECTOR DE MODELO (:checked)
+   Cuando #model-corolla está :checked → muestra bloque Corolla
+   Cuando #model-hilux está :checked  → muestra bloque Hilux
+   Usa selectores de hermanos generales (~)
+   ══════════════════════════════════════════════════════════════ */
+
+/* Estado inicial: ambos bloques ocultos */
+.car-block {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-lg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+/* 
+   Cuando el modelo Corolla está seleccionado,
+   el selector de hermanos ~ alcanza .car-block-corolla
+   (ambos son hermanos dentro de .app-wrapper o body)
+*/
+#model-corolla:checked ~ .app-wrapper .car-block-corolla,
+#model-corolla:checked ~ * .car-block-corolla {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#model-hilux:checked ~ .app-wrapper .car-block-hilux,
+#model-hilux:checked ~ * .car-block-hilux {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Default: Corolla activo por ser el primer checked en HTML */
+#model-corolla:checked ~ .app-wrapper .car-block-corolla {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Estado activo del botón de modelo ────────────────────── */
+#model-corolla:checked ~ .app-wrapper .model-btn-corolla,
+#model-corolla:checked ~ * .model-btn-corolla {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.1);
+}
+
+#model-hilux:checked ~ .app-wrapper .model-btn-hilux,
+#model-hilux:checked ~ * .model-btn-hilux {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.1);
+}
+
+#model-corolla:checked ~ .app-wrapper .model-btn-corolla .btn-indicator,
+#model-corolla:checked ~ * .model-btn-corolla .btn-indicator {
+  background: var(--accent-primary);
+  box-shadow: 0 0 8px var(--accent-primary);
+}
+
+#model-hilux:checked ~ .app-wrapper .model-btn-hilux .btn-indicator,
+#model-hilux:checked ~ * .model-btn-hilux .btn-indicator {
+  background: var(--accent-primary);
+  box-shadow: 0 0 8px var(--accent-primary);
+}
+
+#model-corolla:checked ~ .app-wrapper .model-btn-corolla .btn-icon,
+#model-corolla:checked ~ * .model-btn-corolla .btn-icon {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+#model-hilux:checked ~ .app-wrapper .model-btn-hilux .btn-icon,
+#model-hilux:checked ~ * .model-btn-hilux .btn-icon {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SECCIÓN 3: GRID OVERLAY — ÁNGULOS DE CÁMARA (:checked)
+   Las 3 imágenes (frente, perfil, atrás) están en el DOM
+   simultáneamente con grid-area: 1/1. Se controla su
+   visibilidad con opacity según el radio button activo.
+   Transición fluida de 0.3s ease (requerimiento).
+   ══════════════════════════════════════════════════════════════ */
+
+/* 
+   Ángulo frontal activo por defecto (primer radio checked).
+   Los selectores ~ alcanzan las imágenes hermanas del input.
+*/
+
+/* COROLLA — Control de ángulos */
+#angle-corolla-front:checked ~ .app-wrapper .car-block-corolla .img-front,
+#angle-corolla-front:checked ~ * .car-block-corolla .img-front {
+  opacity: 1;
+}
+#angle-corolla-front:checked ~ .app-wrapper .car-block-corolla .img-side,
+#angle-corolla-front:checked ~ * .car-block-corolla .img-side,
+#angle-corolla-front:checked ~ .app-wrapper .car-block-corolla .img-rear,
+#angle-corolla-front:checked ~ * .car-block-corolla .img-rear {
+  opacity: 0;
+}
+
+#angle-corolla-side:checked ~ .app-wrapper .car-block-corolla .img-side,
+#angle-corolla-side:checked ~ * .car-block-corolla .img-side {
+  opacity: 1;
+}
+#angle-corolla-side:checked ~ .app-wrapper .car-block-corolla .img-front,
+#angle-corolla-side:checked ~ * .car-block-corolla .img-front,
+#angle-corolla-side:checked ~ .app-wrapper .car-block-corolla .img-rear,
+#angle-corolla-side:checked ~ * .car-block-corolla .img-rear {
+  opacity: 0;
+}
+
+#angle-corolla-rear:checked ~ .app-wrapper .car-block-corolla .img-rear,
+#angle-corolla-rear:checked ~ * .car-block-corolla .img-rear {
+  opacity: 1;
+}
+#angle-corolla-rear:checked ~ .app-wrapper .car-block-corolla .img-front,
+#angle-corolla-rear:checked ~ * .car-block-corolla .img-front,
+#angle-corolla-rear:checked ~ .app-wrapper .car-block-corolla .img-side,
+#angle-corolla-rear:checked ~ * .car-block-corolla .img-side {
+  opacity: 0;
+}
+
+/* HILUX — Control de ángulos */
+#angle-hilux-front:checked ~ .app-wrapper .car-block-hilux .img-front,
+#angle-hilux-front:checked ~ * .car-block-hilux .img-front {
+  opacity: 1;
+}
+#angle-hilux-front:checked ~ .app-wrapper .car-block-hilux .img-side,
+#angle-hilux-front:checked ~ * .car-block-hilux .img-side,
+#angle-hilux-front:checked ~ .app-wrapper .car-block-hilux .img-rear,
+#angle-hilux-front:checked ~ * .car-block-hilux .img-rear {
+  opacity: 0;
+}
+
+#angle-hilux-side:checked ~ .app-wrapper .car-block-hilux .img-side,
+#angle-hilux-side:checked ~ * .car-block-hilux .img-side {
+  opacity: 1;
+}
+#angle-hilux-side:checked ~ .app-wrapper .car-block-hilux .img-front,
+#angle-hilux-side:checked ~ * .car-block-hilux .img-front,
+#angle-hilux-side:checked ~ .app-wrapper .car-block-hilux .img-rear,
+#angle-hilux-side:checked ~ * .car-block-hilux .img-rear {
+  opacity: 0;
+}
+
+#angle-hilux-rear:checked ~ .app-wrapper .car-block-hilux .img-rear,
+#angle-hilux-rear:checked ~ * .car-block-hilux .img-rear {
+  opacity: 1;
+}
+#angle-hilux-rear:checked ~ .app-wrapper .car-block-hilux .img-front,
+#angle-hilux-rear:checked ~ * .car-block-hilux .img-front,
+#angle-hilux-rear:checked ~ .app-wrapper .car-block-hilux .img-side,
+#angle-hilux-rear:checked ~ * .car-block-hilux .img-side {
+  opacity: 0;
+}
+
+/* ── Estado activo del botón de ángulo ────────────────────── */
+/* Corolla - frente */
+#angle-corolla-front:checked ~ .app-wrapper .angle-btn-front,
+#angle-corolla-front:checked ~ * .angle-btn-front,
+#angle-hilux-front:checked ~ .app-wrapper .angle-btn-front,
+#angle-hilux-front:checked ~ * .angle-btn-front {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+#angle-corolla-side:checked ~ .app-wrapper .angle-btn-side,
+#angle-corolla-side:checked ~ * .angle-btn-side,
+#angle-hilux-side:checked ~ .app-wrapper .angle-btn-side,
+#angle-hilux-side:checked ~ * .angle-btn-side {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+#angle-corolla-rear:checked ~ .app-wrapper .angle-btn-rear,
+#angle-corolla-rear:checked ~ * .angle-btn-rear,
+#angle-hilux-rear:checked ~ .app-wrapper .angle-btn-rear,
+#angle-hilux-rear:checked ~ * .angle-btn-rear {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+/* ── Indicadores activos de ángulo ────────────────────────── */
+#angle-corolla-front:checked ~ .app-wrapper .angle-btn-front .btn-indicator,
+#angle-corolla-front:checked ~ * .angle-btn-front .btn-indicator,
+#angle-hilux-front:checked ~ .app-wrapper .angle-btn-front .btn-indicator,
+#angle-hilux-front:checked ~ * .angle-btn-front .btn-indicator,
+#angle-corolla-side:checked ~ .app-wrapper .angle-btn-side .btn-indicator,
+#angle-corolla-side:checked ~ * .angle-btn-side .btn-indicator,
+#angle-hilux-side:checked ~ .app-wrapper .angle-btn-side .btn-indicator,
+#angle-hilux-side:checked ~ * .angle-btn-side .btn-indicator,
+#angle-corolla-rear:checked ~ .app-wrapper .angle-btn-rear .btn-indicator,
+#angle-corolla-rear:checked ~ * .angle-btn-rear .btn-indicator,
+#angle-hilux-rear:checked ~ .app-wrapper .angle-btn-rear .btn-indicator,
+#angle-hilux-rear:checked ~ * .angle-btn-rear .btn-indicator {
+  background: var(--accent-primary);
+  box-shadow: 0 0 6px var(--accent-primary);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SECCIÓN 4: RADIO BUTTON HACK — CAMBIO DE COLOR
+   Al hacer :checked en un color de la paleta, se actualiza
+   la variable CSS --car-color mediante selectores de hermanos (~).
+   Esto afecta al .car-color-overlay que tiene background: var(--car-color)
+   La transición se maneja en layout.css en .car-color-overlay.
+   ══════════════════════════════════════════════════════════════ */
+
+/* 
+   Cada color actualiza --car-color en el :root scope del .app-wrapper.
+   La técnica: el input[checked] es hermano previo (en el DOM) del
+   .app-wrapper, por lo que el selector ~ lo alcanza.
+   El --car-color se sobreescribe en el scope del elemento alcanzado.
+*/
+#color-blanco:checked ~ .app-wrapper {
+  --car-color: var(--color-blanco-perla);
+}
+#color-negro:checked ~ .app-wrapper {
+  --car-color: var(--color-negro-cromo);
+}
+#color-rojo:checked ~ .app-wrapper {
+  --car-color: var(--color-rojo-racing);
+}
+#color-azul:checked ~ .app-wrapper {
+  --car-color: var(--color-azul-zafiro);
+}
+#color-gris:checked ~ .app-wrapper {
+  --car-color: var(--color-gris-titanio);
+}
+#color-dorado:checked ~ .app-wrapper {
+  --car-color: var(--color-dorado-champan);
+}
+#color-verde:checked ~ .app-wrapper {
+  --car-color: var(--color-verde-oliva);
+}
+#color-plata:checked ~ .app-wrapper {
+  --car-color: var(--color-plata-metálico);
+}
+
+/* ── Estado activo de la muestra de color (anillo) ─────────── */
+#color-blanco:checked ~ .app-wrapper .swatch-blanco,
+#color-blanco:checked ~ * .swatch-blanco {
+  outline-color: var(--color-blanco-perla);
+  transform: scale(1.2) translateY(-2px);
+}
+#color-negro:checked ~ .app-wrapper .swatch-negro,
+#color-negro:checked ~ * .swatch-negro {
+  outline-color: rgba(255,255,255,0.4);
+  transform: scale(1.2) translateY(-2px);
+}
+#color-rojo:checked ~ .app-wrapper .swatch-rojo,
+#color-rojo:checked ~ * .swatch-rojo {
+  outline-color: var(--color-rojo-racing);
+  transform: scale(1.2) translateY(-2px);
+}
+#color-azul:checked ~ .app-wrapper .swatch-azul,
+#color-azul:checked ~ * .swatch-azul {
+  outline-color: var(--color-azul-zafiro);
+  transform: scale(1.2) translateY(-2px);
+}
+#color-gris:checked ~ .app-wrapper .swatch-gris,
+#color-gris:checked ~ * .swatch-gris {
+  outline-color: var(--color-gris-titanio);
+  transform: scale(1.2) translateY(-2px);
+}
+#color-dorado:checked ~ .app-wrapper .swatch-dorado,
+#color-dorado:checked ~ * .swatch-dorado {
+  outline-color: var(--color-dorado-champan);
+  transform: scale(1.2) translateY(-2px);
+}
+#color-verde:checked ~ .app-wrapper .swatch-verde,
+#color-verde:checked ~ * .swatch-verde {
+  outline-color: var(--color-verde-oliva);
+  transform: scale(1.2) translateY(-2px);
+}
+#color-plata:checked ~ .app-wrapper .swatch-plata,
+#color-plata:checked ~ * .swatch-plata {
+  outline-color: var(--color-plata-metálico);
+  transform: scale(1.2) translateY(-2px);
+}
+
+/* ── Actualización del nombre de color en el panel ─────────── */
+/* 
+   Ocultamos todos los spans de nombre y mostramos solo el activo.
+   El mismo selector de hermanos ~ alcanza el panel de cotización.
+*/
+.color-name-tag { display: none; }
+
+#color-blanco:checked ~ .app-wrapper .color-name-blanco,
+#color-blanco:checked ~ * .color-name-blanco { display: inline; }
+#color-negro:checked ~ .app-wrapper .color-name-negro,
+#color-negro:checked ~ * .color-name-negro   { display: inline; }
+#color-rojo:checked ~ .app-wrapper .color-name-rojo,
+#color-rojo:checked ~ * .color-name-rojo     { display: inline; }
+#color-azul:checked ~ .app-wrapper .color-name-azul,
+#color-azul:checked ~ * .color-name-azul     { display: inline; }
+#color-gris:checked ~ .app-wrapper .color-name-gris,
+#color-gris:checked ~ * .color-name-gris     { display: inline; }
+#color-dorado:checked ~ .app-wrapper .color-name-dorado,
+#color-dorado:checked ~ * .color-name-dorado { display: inline; }
+#color-verde:checked ~ .app-wrapper .color-name-verde,
+#color-verde:checked ~ * .color-name-verde   { display: inline; }
+#color-plata:checked ~ .app-wrapper .color-name-plata,
+#color-plata:checked ~ * .color-name-plata   { display: inline; }
+
+/* ── Precio dinámico según color seleccionado ─────────────── */
+.price-tag { display: none; }
+
+#color-blanco:checked ~ .app-wrapper .price-blanco,
+#color-blanco:checked ~ * .price-blanco { display: block; }
+#color-negro:checked ~ .app-wrapper .price-negro,
+#color-negro:checked ~ * .price-negro   { display: block; }
+#color-rojo:checked ~ .app-wrapper .price-rojo,
+#color-rojo:checked ~ * .price-rojo     { display: block; }
+#color-azul:checked ~ .app-wrapper .price-azul,
+#color-azul:checked ~ * .price-azul     { display: block; }
+#color-gris:checked ~ .app-wrapper .price-gris,
+#color-gris:checked ~ * .price-gris     { display: block; }
+#color-dorado:checked ~ .app-wrapper .price-dorado,
+#color-dorado:checked ~ * .price-dorado { display: block; }
+#color-verde:checked ~ .app-wrapper .price-verde,
+#color-verde:checked ~ * .price-verde   { display: block; }
+#color-plata:checked ~ .app-wrapper .price-plata,
+#color-plata:checked ~ * .price-plata   { display: block; }
+
+/* ── Nombre del modelo activo en badges ────────────────────── */
+.model-badge-corolla { display: none; }
+.model-badge-hilux   { display: none; }
+
+#model-corolla:checked ~ .app-wrapper .model-badge-corolla,
+#model-corolla:checked ~ * .model-badge-corolla { display: block; }
+#model-hilux:checked ~ .app-wrapper .model-badge-hilux,
+#model-hilux:checked ~ * .model-badge-hilux     { display: block; }
+
+/* ══════════════════════════════════════════════════════════════
+   SECCIÓN 5: @KEYFRAMES ANIMACIONES
+   floatIn: Paleta aparece flotando desde abajo al cargar.
+   fadeIn: Fade general de la interfaz.
+   pulseGlow: Efecto glow en acento.
+   ══════════════════════════════════════════════════════════════ */
+
+/*
+   floatIn: animación requerida para la paleta de colores.
+   Va de opacity: 0, translateY(30px) → opacity: 1, translateY(0).
+*/
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.7);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ── Aplicación de animaciones ────────────────────────────── */
+
+/* Paleta: animación floatIn al cargar la página */
+.zone-palette {
+  animation: floatIn 0.6s ease forwards;
+  animation-delay: 0.3s;
+  opacity: 0; /* Inicia oculta hasta que floatIn la muestra */
+}
+
+/*
+   Delay escalonado para cada muestra de color.
+   Cada swatch aparece con un delay incremental,
+   creando efecto en cascada.
+*/
+.color-swatch:nth-child(1)  { animation: floatIn 0.5s ease forwards; animation-delay: 0.35s; opacity: 0; }
+.color-swatch:nth-child(2)  { animation: floatIn 0.5s ease forwards; animation-delay: 0.42s; opacity: 0; }
+.color-swatch:nth-child(3)  { animation: floatIn 0.5s ease forwards; animation-delay: 0.49s; opacity: 0; }
+.color-swatch:nth-child(4)  { animation: floatIn 0.5s ease forwards; animation-delay: 0.56s; opacity: 0; }
+.color-swatch:nth-child(5)  { animation: floatIn 0.5s ease forwards; animation-delay: 0.63s; opacity: 0; }
+.color-swatch:nth-child(6)  { animation: floatIn 0.5s ease forwards; animation-delay: 0.70s; opacity: 0; }
+.color-swatch:nth-child(7)  { animation: floatIn 0.5s ease forwards; animation-delay: 0.77s; opacity: 0; }
+.color-swatch:nth-child(8)  { animation: floatIn 0.5s ease forwards; animation-delay: 0.84s; opacity: 0; }
+
+/* Sidebar: entrada desde la izquierda */
+.zone-sidebar {
+  animation: fadeInLeft 0.5s ease forwards;
+  animation-delay: 0.1s;
+  opacity: 0;
+}
+
+/* Panel: entrada desde la derecha */
+.zone-panel {
+  animation: fadeInRight 0.5s ease forwards;
+  animation-delay: 0.2s;
+  opacity: 0;
+}
+
+/* Área principal: scale in */
+.zone-main {
+  animation: scaleIn 0.5s ease forwards;
+  animation-delay: 0.15s;
+  opacity: 0;
+}
+
+/* Header: fade in */
+.app-header {
+  animation: floatIn 0.4s ease forwards;
+  opacity: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SECCIÓN 6: COMPONENTES UI — PANEL DE COTIZACIÓN
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Título del panel ─────────────────────────────────────── */
+.panel-header {
+  margin-bottom: var(--space-xl);
+}
+
+.panel-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 2px;
+}
+
+.panel-subtitle {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+/* ── Líneas de detalle de cotización ──────────────────────── */
+.quote-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.quote-line:last-of-type {
+  border-bottom: none;
+}
+
+.quote-key {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.quote-value {
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* ── Bloque de precio total ───────────────────────────────── */
+.price-block {
+  margin-top: var(--space-lg);
+  background: linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(129,140,248,0.04) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+}
+
+.price-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: var(--space-xs);
+}
+
+.price-amount {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.price-currency {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  vertical-align: top;
+  margin-top: 4px;
+  margin-right: 2px;
+  display: inline-block;
+}
+
+.price-note {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-top: var(--space-xs);
+}
+
+/* ── Botón CTA ────────────────────────────────────────────── */
+.cta-btn {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-md);
+  padding: var(--space-md);
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+  border: none;
+  border-radius: var(--radius-md);
+  color: white;
+  font-family: var(--font-family);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: var(--transition-base);
+  text-align: center;
+  text-decoration: none;
+  animation: pulseGlow 3s ease infinite;
+}
+
+.cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.5);
+  animation: none;
+}
+
+/* ── Chips de servicios ───────────────────────────────────── */
+.services-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.service-chip {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: 4px 10px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: var(--transition-fast);
+}
+
+.service-chip:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-secondary);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+/* ── Garantía badge ───────────────────────────────────────── */
+.warranty-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.warranty-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.warranty-text {
+  font-size: 0.72rem;
+  color: rgba(134, 239, 172, 0.9);
+  line-height: 1.4;
+}
+
+/* ── Separador con texto ──────────────────────────────────── */
+.divider-text {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin: var(--space-lg) 0;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.divider-text::before,
+.divider-text::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+/* ── Estadísticas del taller ──────────────────────────────── */
+.stats-row {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.stat-card {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm);
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--accent-secondary);
+  letter-spacing: -0.02em;
+}
+
+.stat-label {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+  letter-spacing: 0.04em;
+}

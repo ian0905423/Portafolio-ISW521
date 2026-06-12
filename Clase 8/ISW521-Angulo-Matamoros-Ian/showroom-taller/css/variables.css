@@ -1,0 +1,75 @@
+/* ============================================================
+   variables.css — Auto Style CR
+   Define todas las custom properties (tokens de diseño).
+   Se usa :root para scope global y se sobreescribe mediante
+   el Radio Button Hack en interactions.css para --car-color.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+
+:root {
+  /* ── Color activo del vehículo (se actualiza via :checked ~ selector) ── */
+  --car-color: #FFFFFF;           /* Blanco Perla (default) */
+
+  /* ── Paleta de colores de pintura disponibles ── */
+  --color-blanco-perla:   #F5F5F0;
+  --color-negro-cromo:    #1A1A1A;
+  --color-rojo-racing:    #C0392B;
+  --color-azul-zafiro:    #1A3A6B;
+  --color-gris-titanio:   #6B7280;
+  --color-dorado-champan: #C9A84C;
+  --color-verde-oliva:    #4A5C3A;
+  --color-plata-metálico: #9CA3AF;
+
+  /* ── Colores de la interfaz ── */
+  --bg-app:         #0D0D0F;      /* Fondo general ultra oscuro */
+  --bg-sidebar:     #131316;      /* Sidebar ligeramente diferente */
+  --bg-panel:       #131316;      /* Panel derecho */
+  --bg-card:        #1C1C22;      /* Tarjetas / secciones internas */
+  --bg-input:       #222228;      /* Inputs / controles */
+  --border-subtle:  #2A2A35;      /* Bordes sutiles */
+  --border-active:  #4F46E5;      /* Borde activo (acento principal) */
+
+  /* ── Tipografía ── */
+  --font-family:    'Inter', sans-serif;
+  --text-primary:   #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --text-muted:     #4B5563;
+  --text-accent:    #6366F1;      /* Indigo — color marca Auto Style CR */
+
+  /* ── Acento / marca ── */
+  --accent-primary:   #6366F1;    /* Indigo 500 */
+  --accent-secondary: #818CF8;    /* Indigo 400 */
+  --accent-glow:      rgba(99, 102, 241, 0.25);
+
+  /* ── Espaciado ── */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  32px;
+  --space-2xl: 48px;
+
+  /* ── Bordes ── */
+  --radius-sm:  6px;
+  --radius-md:  12px;
+  --radius-lg:  20px;
+  --radius-full: 9999px;
+
+  /* ── Sombras ── */
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.5);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.6);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,0.7);
+  --shadow-glow: 0 0 24px var(--accent-glow);
+
+  /* ── Transiciones ── */
+  --transition-fast:   all 0.15s ease;
+  --transition-base:   all 0.3s ease;
+  --transition-slow:   all 0.5s ease;
+
+  /* ── Layout ── */
+  --sidebar-width:     220px;
+  --panel-width:       290px;
+  --header-height:     60px;
+  --palette-height:    110px;
+}

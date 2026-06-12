@@ -1,0 +1,203 @@
+/* ============================================================
+   colors.css — Auto Style CR
+   Colorización de imágenes del vehículo mediante CSS filter.
+   
+   TÉCNICA: CSS filter() — 100% CSS puro, cero JavaScript.
+   
+   Al seleccionar un color en la paleta, el selector CSS
+   de hermanos (~) aplica un filtro directo sobre las
+   imágenes <img> del vehículo:
+   
+     #color-rojo:checked ~ .app-wrapper .car-image {
+       filter: hue-rotate(Xdeg) saturate(Y) brightness(Z);
+     }
+   
+   Cada combinación de hue-rotate + saturate + brightness
+   reproduce fielmente el color seleccionado sobre la foto
+   real del vehículo, preservando luces, sombras y detalles.
+   
+   NOTA SOBRE LOS VALORES:
+   Las imágenes base del Corolla son ROJAS y las del Hilux
+   son GRISES. Los valores de filter están calibrados para
+   partir desde esas bases y llegar al color deseado.
+   
+   hue-rotate(0deg)  = sin cambio de matiz
+   saturate(0)       = imagen en escala de grises
+   saturate(1)       = saturación normal de la imagen
+   brightness(1)     = brillo normal de la imagen
+   ============================================================ */
+
+/* ── Resetear el overlay de color antiguo ─────────────────── */
+/*
+   Desactivamos el car-color-overlay del enfoque anterior.
+   Ahora usamos filter directamente en <img>.
+*/
+.car-color-overlay {
+  display: none !important;
+}
+
+/* ── Transición fluida en todas las imágenes ──────────────── */
+/*
+   La transición de filter garantiza cambio suave de color
+   al hacer clic en cualquier muestra de la paleta.
+*/
+.car-image {
+  transition: opacity 0.3s ease, filter 0.4s ease;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   COROLLA GR — FILTROS DE COLOR
+   Base: imagen roja (Corolla GR en rojo racing).
+   Partimos del rojo y rotamos el matiz para cada color.
+   
+   Rueda de colores (hue-rotate desde rojo = 0°):
+   - Rojo:    0°   (base original)
+   - Dorado: +30°  (naranja-dorado)
+   - Verde:  +120° (verde)
+   - Azul:   +210° (azul-cian)
+   - Plata:  saturate(0) brightness(1.4) = plateado
+   - Blanco: saturate(0) brightness(2.0) = blanco
+   - Negro:  saturate(0) brightness(0.2) = negro
+   - Gris:   saturate(0) brightness(0.7) = gris medio
+   ══════════════════════════════════════════════════════════════ */
+
+/* ROJO (color original — sin filtro aplicado) */
+#color-rojo:checked ~ .app-wrapper .car-block-corolla .car-image {
+  filter: saturate(1.2) brightness(1.0);
+}
+
+/* BLANCO PERLA */
+#color-blanco:checked ~ .app-wrapper .car-block-corolla .car-image {
+  filter: saturate(0) brightness(2.2) contrast(0.9);
+}
+
+/* NEGRO CROMO (AJUSTADO PARA NO PERDER DETALLES) */
+#color-negro:checked ~ .app-wrapper .car-block-corolla .car-image {
+  filter: saturate(0) brightness(0.4) contrast(1.15);
+}
+
+/* AZUL ZAFIRO */
+#color-azul:checked ~ .app-wrapper .car-block-corolla .car-image {
+  filter: hue-rotate(210deg) saturate(2.5) brightness(0.75);
+}
+
+/* GRIS TITANIO */
+#color-gris:checked ~ .app-wrapper .car-block-corolla .car-image {
+  filter: saturate(0.1) brightness(0.65) contrast(1.1);
+}
+
+/* DORADO CHAMPÁN */
+#color-dorado:checked ~ .app-wrapper .car-block-corolla .car-image {
+  filter: hue-rotate(25deg) saturate(1.8) brightness(1.0) sepia(0.4);
+}
+
+/* VERDE OLIVA */
+#color-verde:checked ~ .app-wrapper .car-block-corolla .car-image {
+  filter: hue-rotate(105deg) saturate(1.4) brightness(0.6);
+}
+
+/* PLATA METÁLICO */
+#color-plata:checked ~ .app-wrapper .car-block-corolla .car-image {
+  filter: saturate(0.05) brightness(1.3) contrast(1.05);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HILUX 4X4 — FILTROS DE COLOR
+   Base: imagen gris metálico oscuro.
+   Para el Hilux, la base es gris → saturate(0) brightness(0.7).
+   Debemos agregar saturación y matiz para colores vivos.
+   
+   Estrategia Hilux:
+   - Gris:    base original (sin filtro)
+   - Negro:   brightness(0.2)
+   - Blanco:  brightness(2.0)
+   - Rojo:    hue-rotate(0) sepia(1) saturate(5) brightness(0.8)
+   - Azul:    hue-rotate(210deg) saturate(3)
+   - Dorado:  sepia(1) saturate(2) brightness(1.1)
+   - Verde:   hue-rotate(90deg) saturate(2) brightness(0.65)
+   - Plata:   brightness(1.5) contrast(0.9)
+   ══════════════════════════════════════════════════════════════ */
+
+/* GRIS TITANIO (color original Hilux — sin filtro fuerte) */
+#color-gris:checked ~ .app-wrapper .car-block-hilux .car-image {
+  filter: saturate(0.8) brightness(0.9);
+}
+
+/* BLANCO PERLA */
+#color-blanco:checked ~ .app-wrapper .car-block-hilux .car-image {
+  filter: saturate(0) brightness(2.4) contrast(0.85);
+}
+
+/* NEGRO CROMO (AJUSTADO PARA NO PERDER DETALLES) */
+#color-negro:checked ~ .app-wrapper .car-block-hilux .car-image {
+  filter: saturate(0) brightness(0.4) contrast(1.2);
+}
+
+/* ROJO RACING */
+#color-rojo:checked ~ .app-wrapper .car-block-hilux .car-image {
+  filter: sepia(1) hue-rotate(330deg) saturate(4.5) brightness(0.85);
+}
+
+/* AZUL ZAFIRO */
+#color-azul:checked ~ .app-wrapper .car-block-hilux .car-image {
+  filter: sepia(1) hue-rotate(185deg) saturate(3.5) brightness(0.7);
+}
+
+/* DORADO CHAMPÁN */
+#color-dorado:checked ~ .app-wrapper .car-block-hilux .car-image {
+  filter: sepia(1) saturate(2.5) brightness(1.05) hue-rotate(10deg);
+}
+
+/* VERDE OLIVA */
+#color-verde:checked ~ .app-wrapper .car-block-hilux .car-image {
+  filter: sepia(1) hue-rotate(75deg) saturate(2.0) brightness(0.55);
+}
+
+/* PLATA METÁLICO */
+#color-plata:checked ~ .app-wrapper .car-block-hilux .car-image {
+  filter: saturate(0) brightness(1.55) contrast(0.9);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   EFECTOS DE TRANSICIÓN MEJORADOS AL CAMBIAR COLOR
+   Un pequeño scale + glow hace más notorio el cambio.
+   ══════════════════════════════════════════════════════════════ */
+
+/* 
+   Al cambiar de color, el bloque del vehículo hace un
+   micro-pulse para llamar la atención sobre el cambio.
+   Usamos animation sobre el car-images-stack.
+*/
+@keyframes colorPulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.015); }
+  100% { transform: scale(1); }
+}
+
+/* Cada radio de color dispara el pulse en el stack */
+#color-blanco:checked ~ .app-wrapper .car-images-stack,
+#color-negro:checked  ~ .app-wrapper .car-images-stack,
+#color-rojo:checked   ~ .app-wrapper .car-images-stack,
+#color-azul:checked   ~ .app-wrapper .car-images-stack,
+#color-gris:checked   ~ .app-wrapper .car-images-stack,
+#color-dorado:checked ~ .app-wrapper .car-images-stack,
+#color-verde:checked  ~ .app-wrapper .car-images-stack,
+#color-plata:checked  ~ .app-wrapper .car-images-stack {
+  animation: colorPulse 0.35s ease;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   INDICADOR DE COLOR ACTIVO EN LA MUESTRA
+   El borde de la muestra refleja el color del vehículo.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Muestra activa: escala y brillo del inner circle */
+.color-swatch:has(+ input:checked)::before,
+#color-blanco:checked ~ .app-wrapper .swatch-blanco::before  { box-shadow: 0 0 12px rgba(245,245,240,0.6); }
+#color-negro:checked  ~ .app-wrapper .swatch-negro::before   { box-shadow: 0 0 12px rgba(255,255,255,0.3); }
+#color-rojo:checked   ~ .app-wrapper .swatch-rojo::before    { box-shadow: 0 0 12px rgba(192,57,43,0.7);   }
+#color-azul:checked   ~ .app-wrapper .swatch-azul::before    { box-shadow: 0 0 12px rgba(26,58,107,0.7);   }
+#color-gris:checked   ~ .app-wrapper .swatch-gris::before    { box-shadow: 0 0 12px rgba(107,114,128,0.6); }
+#color-dorado:checked ~ .app-wrapper .swatch-dorado::before  { box-shadow: 0 0 12px rgba(201,168,76,0.7);  }
+#color-verde:checked  ~ .app-wrapper .swatch-verde::before   { box-shadow: 0 0 12px rgba(74,92,58,0.6);    }
+#color-plata:checked  ~ .app-wrapper .swatch-plata::before   { box-shadow: 0 0 12px rgba(156,163,175,0.6); }

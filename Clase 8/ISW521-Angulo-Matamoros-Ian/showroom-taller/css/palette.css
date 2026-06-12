@@ -1,0 +1,165 @@
+/* ============================================================
+   palette.css — Auto Style CR
+   Microestructura: Flexbox 100% para la paleta de colores.
+   
+   Cumple exactamente con los requerimientos:
+   ✓ display: flex
+   ✓ justify-content: center
+   ✓ align-items: center
+   ✓ flex-wrap: wrap (responsividad intrínseca sin @media)
+   ✓ gap mínimo 8px
+   ✓ Mínimo 6 muestras <label> + <input type="radio">
+   ============================================================ */
+
+/* ── Contenedor principal Flexbox ─────────────────────────── */
+.palette-container {
+  display: flex;              /* Requerimiento: display flex */
+  justify-content: center;   /* Requerimiento: centrado horizontal */
+  align-items: center;       /* Requerimiento: centrado vertical */
+  flex-wrap: wrap;           /* Requerimiento: wrap para responsividad intrínseca */
+  gap: var(--space-sm);      /* Requerimiento: gap mínimo 8px (--space-sm = 8px) */
+  height: 100%;
+  padding: 0 var(--space-2xl);
+}
+
+/* ── Etiqueta de la paleta ────────────────────────────────── */
+.palette-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-right: var(--space-md);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Ocultar los inputs radio reales ──────────────────────── */
+/*
+   Los radio buttons se ocultan visualmente pero permanecen
+   accesibles y funcionales para el mecanismo :checked.
+   No usamos display:none para mantener accesibilidad.
+*/
+.color-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* ── Muestra de color: <label> que envuelve el <input> ─────── */
+/*
+   Cada muestra es un <label> que actúa como proxy visual
+   del radio button oculto. Al hacer click en el label,
+   se activa el :checked en el input correspondiente.
+*/
+.color-swatch {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: var(--transition-base);
+  /* 
+     El borde exterior marca el estado no seleccionado.
+     Un borde blanco/transparente con offset muestra el anillo de selección.
+  */
+  border: 2px solid transparent;
+  outline: 2px solid transparent;
+  outline-offset: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Inner circle — el círculo real de color */
+.color-swatch::before {
+  content: '';
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background-color: var(--swatch-color);
+  transition: var(--transition-base);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+/* ── Hover sobre la muestra ───────────────────────────────── */
+.color-swatch:hover {
+  transform: scale(1.15) translateY(-3px);
+  outline-color: rgba(255, 255, 255, 0.4);
+}
+
+.color-swatch:hover::before {
+  width: 36px;
+  height: 36px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+/* 
+   Cada color con su variable --swatch-color individual.
+   Esto permite reusar el mismo componente cambiando solo
+   una variable por clase, principio DRY.
+*/
+.swatch-blanco   { --swatch-color: var(--color-blanco-perla); }
+.swatch-negro    { --swatch-color: var(--color-negro-cromo); }
+.swatch-rojo     { --swatch-color: var(--color-rojo-racing); }
+.swatch-azul     { --swatch-color: var(--color-azul-zafiro); }
+.swatch-gris     { --swatch-color: var(--color-gris-titanio); }
+.swatch-dorado   { --swatch-color: var(--color-dorado-champan); }
+.swatch-verde    { --swatch-color: var(--color-verde-oliva); }
+.swatch-plata    { --swatch-color: var(--color-plata-metálico); }
+
+/* ── Tooltip de nombre del color ──────────────────────────── */
+.color-swatch::after {
+  content: attr(data-color-name);
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 0.65rem;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: var(--transition-fast);
+  letter-spacing: 0.04em;
+}
+
+.color-swatch:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── Divisor visual ───────────────────────────────────────── */
+.palette-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--border-subtle);
+  margin: 0 var(--space-sm);
+  flex-shrink: 0;
+}
+
+/* ── Nombre del color activo en la paleta ─────────────────── */
+.color-name-display {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  min-width: 100px;
+  text-align: left;
+}

@@ -1,0 +1,304 @@
+/* ============================================================
+   layout.css — Auto Style CR
+   Macroestructura: CSS Grid asimétrico con grid-template-areas.
+   ── Zona A: Sidebar  (selector modelo + ángulo)
+   ── Zona B: Main     (vista del vehículo, ≥55% ancho)
+   ── Zona C: Panel    (resumen cotización)
+   ── Zona D: Palette  (barra inferior 100% ancho, Flexbox)
+   
+   REGLAS:
+   • Sin @media queries — responsividad intrínseca
+   • Zona B ocupa al menos 55% del ancho total
+   ============================================================ */
+
+/* ── Reset mínimo ─────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  /* Previene flash de FOUC en las transiciones */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Header de marca ──────────────────────────────────────── */
+.app-header {
+  height: var(--header-height);
+  background: linear-gradient(90deg, #0D0D0F 0%, #131316 50%, #0D0D0F 100%);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-xl);
+  gap: var(--space-md);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+
+.app-header .logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.app-header .logo-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.app-header .logo-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.app-header .logo-name span {
+  color: var(--accent-primary);
+}
+
+.app-header .header-tagline {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-left: auto;
+}
+
+/* ── App Wrapper principal ────────────────────────────────── */
+/* 
+   Usa CSS Grid con auto-fit/minmax para responsividad intrínseca.
+   La distribución es: Sidebar | Main (flex-1) | Panel
+   Sin @media queries — el grid se adapta con minmax.
+*/
+.app-wrapper {
+  display: grid;
+  /* 
+     Columnas asimétricas:
+     - A: sidebar fijo mínimo 200px, máximo var(--sidebar-width)
+     - B: área principal, mínimo 55% restante del viewport (1fr)  
+     - C: panel derecho fijo mínimo 250px, máximo var(--panel-width)
+     El 1fr garantiza que B tome el espacio restante (>55% en pantallas normales).
+  */
+  grid-template-columns:
+    minmax(200px, var(--sidebar-width))
+    minmax(0, 1fr)
+    minmax(250px, var(--panel-width));
+  
+  grid-template-rows:
+    1fr                    /* Fila principal: A + B + C */
+    var(--palette-height); /* Fila inferior: D (paleta) */
+
+  grid-template-areas:
+    "sidebar  main   panel"
+    "palette  palette palette";
+
+  height: calc(100vh - var(--header-height));
+  overflow: hidden;
+}
+
+/* ── Zona A: Sidebar ──────────────────────────────────────── */
+.zone-sidebar {
+  grid-area: sidebar;
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid var(--border-subtle);
+  padding: var(--space-lg) var(--space-md);
+  overflow-y: auto;
+  /* Scrollbar personalizado */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-subtle) transparent;
+}
+
+.zone-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+.zone-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.zone-sidebar::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: var(--radius-full);
+}
+
+/* ── Zona B: Main (vista del vehículo) ────────────────────── */
+.zone-main {
+  grid-area: main;
+  background: radial-gradient(ellipse at center, #1a1a2e 0%, var(--bg-app) 70%);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Zona C: Panel de cotización ──────────────────────────── */
+.zone-panel {
+  grid-area: panel;
+  background-color: var(--bg-panel);
+  border-left: 1px solid var(--border-subtle);
+  padding: var(--space-lg) var(--space-md);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-subtle) transparent;
+}
+
+.zone-panel::-webkit-scrollbar {
+  width: 4px;
+}
+.zone-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+.zone-panel::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: var(--radius-full);
+}
+
+/* ── Zona D: Paleta de colores (barra inferior) ───────────── */
+.zone-palette {
+  grid-area: palette;
+  /* 
+     grid-column: 1 / -1 asegura que ocupa todo el ancho,
+     desde la primera hasta la última línea del grid.
+  */
+  grid-column: 1 / -1;
+  background: linear-gradient(180deg, #0D0D0F 0%, #131316 100%);
+  border-top: 1px solid var(--border-subtle);
+  /* El contenido interno usa Flexbox — ver palette.css */
+}
+
+/* ── Secciones internas genéricas ─────────────────────────── */
+.section-title {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-xs);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.section-block {
+  margin-bottom: var(--space-xl);
+}
+
+/* ── Contenedor de imágenes del vehículo (Grid Overlay) ────── */
+/*
+   Todas las imágenes (frente, perfil, atrás) de cada modelo
+   están en el DOM al mismo tiempo, superpuestas en la misma
+   celda del grid usando grid-area: 1/1.
+   La visibilidad se controla con opacity y :checked.
+*/
+.car-viewport {
+  position: relative;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: var(--space-lg);
+}
+
+.car-images-stack {
+  /* 
+     Contenedor grid donde todas las imágenes ocupan
+     exactamente la misma celda — técnica Grid Overlay.
+  */
+  display: grid;
+  width: 100%;
+  max-width: 750px;
+  aspect-ratio: 16 / 9;
+}
+
+.car-image {
+  /* Todas las imágenes en la misma celda del grid */
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* 
+     Aplicamos tint del color seleccionado mediante mix-blend-mode.
+     La transición garantiza suavidad de 0.3s.
+  */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: var(--radius-md);
+  filter: drop-shadow(0 20px 60px rgba(0,0,0,0.8));
+}
+
+/* La imagen activa se hace visible */
+.car-image.active {
+  opacity: 1;
+}
+
+/* ── Overlay de color sobre el vehículo ────────────────────── */
+.car-color-overlay {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  /* 
+     El color activo se aplica usando la variable --car-color.
+     mix-blend-mode: color aplica el tinte sobre la imagen sin
+     destruir los detalles de luz/sombra del vehículo.
+  */
+  background-color: var(--car-color);
+  mix-blend-mode: color;
+  opacity: 0.35;
+  border-radius: var(--radius-md);
+  transition: var(--transition-base);
+  pointer-events: none;
+}
+
+/* ── Badge de modelo activo ─────────────────────────────────  */
+.model-badge {
+  position: absolute;
+  top: var(--space-md);
+  left: var(--space-md);
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-full);
+  padding: var(--space-xs) var(--space-md);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-secondary);
+  letter-spacing: 0.04em;
+  transition: var(--transition-base);
+  pointer-events: none;
+}
+
+/* ── Badge de ángulo activo ─────────────────────────────────── */
+.angle-badge {
+  position: absolute;
+  bottom: var(--space-md);
+  right: var(--space-md);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-full);
+  padding: var(--space-xs) var(--space-md);
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  pointer-events: none;
+}

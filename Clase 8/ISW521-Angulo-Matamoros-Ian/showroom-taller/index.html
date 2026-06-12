@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- SEO -->
+  <title>Auto Style CR — Cotizador Visual de Pintura Automotriz</title>
+  <meta name="description" content="Cotiza el servicio de enderezado y pintura automotriz de tu Toyota Corolla GR o Hilux 4x4 con nuestro visualizador interactivo. Elige el ángulo, selecciona el color y obtén tu presupuesto al instante." />
+  <meta name="theme-color" content="#0D0D0F" />
+  
+  <!-- CSS — orden: variables → layout → palette → interactions → colors → extras -->
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/palette.css" />
+  <link rel="stylesheet" href="css/interactions.css" />
+  <link rel="stylesheet" href="css/colors.css" />
+  <link rel="stylesheet" href="css/extras.css" />
+</head>
+
+<body>
+
+  <!--
+    ═══════════════════════════════════════════════════════════════
+    ARQUITECTURA DE LOS RADIO BUTTONS — EXPLICACIÓN CRÍTICA
+    ═══════════════════════════════════════════════════════════════
+    
+    Para que el "Radio Button Hack" funcione, los inputs DEBEN ser
+    hermanos anteriores (en el DOM) del elemento que se quiere
+    modificar. El selector CSS `A ~ B` solo funciona si B viene
+    DESPUÉS de A en el mismo nivel del DOM.
+    
+    Estructura correcta:
+    <body>
+      <input id="model-..." />     ← Hermano previo
+      <input id="angle-..." />     ← Hermano previo
+      <input id="color-..." />     ← Hermano previo
+      <header>...</header>         ← Hermano siguiente
+      <div class="app-wrapper">    ← Objetivo alcanzado con ~
+    </body>
+    ═══════════════════════════════════════════════════════════════
+  -->
+
+  <!-- ════════════════════════════════════════════════════════
+       RADIO BUTTONS OCULTOS — SELECTOR DE MODELO
+       Solo uno puede estar checked a la vez (mismo name)
+       ════════════════════════════════════════════════════════ -->
+  
+  <!-- Modelos: corolla-gr vs hilux-4x4 -->
+  <input
+    type="radio"
+    id="model-corolla"
+    name="car-model"
+    class="model-input"
+    checked
+    aria-label="Seleccionar Toyota Corolla GR"
+  />
+  <input
+    type="radio"
+    id="model-hilux"
+    name="car-model"
+    class="model-input"
+    aria-label="Seleccionar Toyota Hilux 4x4"
+  />
+
+  <!-- Ángulos del Corolla GR -->
+  <input
+    type="radio"
+    id="angle-corolla-front"
+    name="angle-corolla"
+    class="angle-input"
+    checked
+    aria-label="Vista frontal Corolla GR"
+  />
+  <input
+    type="radio"
+    id="angle-corolla-side"
+    name="angle-corolla"
+    class="angle-input"
+    aria-label="Vista lateral Corolla GR"
+  />
+  <input
+    type="radio"
+    id="angle-corolla-rear"
+    name="angle-corolla"
+    class="angle-input"
+    aria-label="Vista trasera Corolla GR"
+  />
+
+  <!-- Ángulos del Hilux 4x4 -->
+  <input
+    type="radio"
+    id="angle-hilux-front"
+    name="angle-hilux"
+    class="angle-input"
+    checked
+    aria-label="Vista frontal Hilux 4x4"
+  />
+  <input
+    type="radio"
+    id="angle-hilux-side"
+    name="angle-hilux"
+    class="angle-input"
+    aria-label="Vista lateral Hilux 4x4"
+  />
+  <input
+    type="radio"
+    id="angle-hilux-rear"
+    name="angle-hilux"
+    class="angle-input"
+    aria-label="Vista trasera Hilux 4x4"
+  />
+
+  <!-- ════════════════════════════════════════════════════════
+       RADIO BUTTONS OCULTOS — PALETA DE COLORES
+       Actualizan --car-color en .app-wrapper via :checked ~
+       ════════════════════════════════════════════════════════ -->
+  <input type="radio" id="color-blanco"  name="car-color" class="color-input" checked aria-label="Color Blanco Perla" />
+  <input type="radio" id="color-negro"   name="car-color" class="color-input" aria-label="Color Negro Cromo" />
+  <input type="radio" id="color-rojo"    name="car-color" class="color-input" aria-label="Color Rojo Racing" />
+  <input type="radio" id="color-azul"    name="car-color" class="color-input" aria-label="Color Azul Zafiro" />
+  <input type="radio" id="color-gris"    name="car-color" class="color-input" aria-label="Color Gris Titanio" />
+  <input type="radio" id="color-dorado"  name="car-color" class="color-input" aria-label="Color Dorado Champán" />
+  <input type="radio" id="color-verde"   name="car-color" class="color-input" aria-label="Color Verde Oliva" />
+  <input type="radio" id="color-plata"   name="car-color" class="color-input" aria-label="Color Plata Metálico" />
+
+  <!-- ════════════════════════════════════════════════════════
+       CHECKBOXES DE DAÑOS — Zonas de reparación
+       Igual que los radios de color, deben estar ANTES del
+       .app-wrapper para que el selector ~ los alcance.
+       ════════════════════════════════════════════════════════ -->
+  <input type="checkbox" id="dmg-parachoque-front"  class="dmg-input" aria-label="Parachoque delantero" />
+  <input type="checkbox" id="dmg-capo"              class="dmg-input" aria-label="Capó" />
+  <input type="checkbox" id="dmg-aleta-der"         class="dmg-input" aria-label="Aleta delantera derecha" />
+  <input type="checkbox" id="dmg-puerta-front-der"  class="dmg-input" aria-label="Puerta delantera derecha" />
+  <input type="checkbox" id="dmg-puerta-rear-der"   class="dmg-input" aria-label="Puerta trasera derecha" />
+  <input type="checkbox" id="dmg-aleta-rear"        class="dmg-input" aria-label="Aleta trasera" />
+  <input type="checkbox" id="dmg-maletero"          class="dmg-input" aria-label="Maletero / Compuerta" />
+  <input type="checkbox" id="dmg-parachoque-rear"   class="dmg-input" aria-label="Parachoque trasero" />
+
+  <!-- ════════════════════════════════════════════════════════
+       HEADER DE MARCA
+       ════════════════════════════════════════════════════════ -->
+  <header class="app-header" role="banner">
+    <div class="logo" aria-label="Auto Style CR — Taller de Pintura">
+      <div class="logo-icon" aria-hidden="true">🚘</div>
+      <span class="logo-name">Auto <span>Style</span> CR</span>
+    </div>
+    <span class="header-tagline">Cotizador Visual de Pintura Automotriz</span>
+  </header>
+
+  <!-- ════════════════════════════════════════════════════════
+       APP WRAPPER — GRID ASIMÉTRICO PRINCIPAL
+       grid-template-areas: "sidebar main panel" / "palette palette palette"
+       ════════════════════════════════════════════════════════ -->
+  <div class="app-wrapper" role="main">
+
+    <!-- ─────────────────────────────────────────────────────
+         ZONA A: SIDEBAR — Selector de modelo + Ángulos
+         ───────────────────────────────────────────────────── -->
+    <aside class="zone-sidebar" aria-label="Panel de selección de vehículo">
+
+      <!-- Bloque: Selector de modelo -->
+      <section class="section-block" aria-labelledby="model-section-title">
+        <h2 id="model-section-title" class="section-title">Modelo</h2>
+
+        <!--
+          Labels como proxy visual del radio button oculto.
+          El atributo for="model-corolla" conecta el label con
+          el input correspondiente, activando :checked al hacer clic.
+        -->
+        <label
+          for="model-corolla"
+          class="model-btn model-btn-corolla"
+          role="radio"
+          aria-label="Toyota Corolla GR"
+        >
+          <span class="btn-icon" aria-hidden="true">🏎️</span>
+          <span class="btn-text">
+            <span class="btn-name">Corolla GR</span>
+            <span class="btn-sub">Sport · 2024</span>
+          </span>
+          <span class="btn-indicator" aria-hidden="true"></span>
+        </label>
+
+        <label
+          for="model-hilux"
+          class="model-btn model-btn-hilux"
+          role="radio"
+          aria-label="Toyota Hilux 4x4"
+        >
+          <span class="btn-icon" aria-hidden="true">🛻</span>
+          <span class="btn-text">
+            <span class="btn-name">Hilux 4×4</span>
+            <span class="btn-sub">Adventure · 2024</span>
+          </span>
+          <span class="btn-indicator" aria-hidden="true"></span>
+        </label>
+      </section>
+
+      <!-- Bloque: Selector de ángulo de cámara -->
+      <section class="section-block" aria-labelledby="angle-section-title">
+        <h2 id="angle-section-title" class="section-title">Ángulo de Cámara</h2>
+
+        <!-- Botones de ángulo del Corolla (visible cuando Corolla activo) -->
+        <div class="angle-group angle-group-corolla">
+          <label
+            for="angle-corolla-front"
+            class="angle-btn angle-btn-front"
+            aria-label="Vista frontal"
+          >
+            <span class="btn-icon" aria-hidden="true">⬆️</span>
+            <span class="btn-text">
+              <span class="btn-name">Frontal</span>
+              <span class="btn-sub">Vista delantera</span>
+            </span>
+            <span class="btn-indicator" aria-hidden="true"></span>
+          </label>
+
+          <label
+            for="angle-corolla-side"
+            class="angle-btn angle-btn-side"
+            aria-label="Vista lateral"
+          >
+            <span class="btn-icon" aria-hidden="true">➡️</span>
+            <span class="btn-text">
+              <span class="btn-name">Perfil</span>
+              <span class="btn-sub">Vista lateral</span>
+            </span>
+            <span class="btn-indicator" aria-hidden="true"></span>
+          </label>
+
+          <label
+            for="angle-corolla-rear"
+            class="angle-btn angle-btn-rear"
+            aria-label="Vista trasera"
+          >
+            <span class="btn-icon" aria-hidden="true">⬇️</span>
+            <span class="btn-text">
+              <span class="btn-name">Trasera</span>
+              <span class="btn-sub">Vista posterior</span>
+            </span>
+            <span class="btn-indicator" aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <!-- Botones de ángulo del Hilux (visible cuando Hilux activo) -->
+        <div class="angle-group angle-group-hilux">
+          <label
+            for="angle-hilux-front"
+            class="angle-btn angle-btn-front"
+            aria-label="Vista frontal"
+          >
+            <span class="btn-icon" aria-hidden="true">⬆️</span>
+            <span class="btn-text">
+              <span class="btn-name">Frontal</span>
+              <span class="btn-sub">Vista delantera</span>
+            </span>
+            <span class="btn-indicator" aria-hidden="true"></span>
+          </label>
+
+          <label
+            for="angle-hilux-side"
+            class="angle-btn angle-btn-side"
+            aria-label="Vista lateral"
+          >
+            <span class="btn-icon" aria-hidden="true">➡️</span>
+            <span class="btn-text">
+              <span class="btn-name">Perfil</span>
+              <span class="btn-sub">Vista lateral</span>
+            </span>
+            <span class="btn-indicator" aria-hidden="true"></span>
+          </label>
+
+          <label
+            for="angle-hilux-rear"
+            class="angle-btn angle-btn-rear"
+            aria-label="Vista trasera"
+          >
+            <span class="btn-icon" aria-hidden="true">⬇️</span>
+            <span class="btn-text">
+              <span class="btn-name">Trasera</span>
+              <span class="btn-sub">Vista posterior</span>
+            </span>
+            <span class="btn-indicator" aria-hidden="true"></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Bloque: Info del taller -->
+      <section class="section-block" aria-labelledby="workshop-section-title">
+        <h2 id="workshop-section-title" class="section-title">Taller</h2>
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-number">15+</div>
+            <div class="stat-label">Años</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">2k</div>
+            <div class="stat-label">Autos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">5★</div>
+            <div class="stat-label">Rating</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bloque: Daños a Reparar -->
+      <section class="section-block" aria-labelledby="damage-section-title">
+        <h2 id="damage-section-title" class="section-title">Daños a Reparar</h2>
+        <p style="font-size:0.65rem;color:var(--text-muted);margin-bottom:var(--space-sm);line-height:1.5">
+          Selecciona las zonas con daño para incluirlas en el presupuesto.
+        </p>
+
+        <label for="dmg-parachoque-front" class="damage-btn dmg-btn-parachoque-front" aria-label="Parachoque delantero">
+          <span class="dmg-icon">🔧</span>
+          <span class="dmg-text">
+            <span class="dmg-name">Parachoque Delantero</span>
+            <span class="dmg-price-tag">+₡35,000</span>
+          </span>
+          <span class="dmg-checkmark">✓</span>
+        </label>
+
+        <label for="dmg-capo" class="damage-btn dmg-btn-capo" aria-label="Capó">
+          <span class="dmg-icon">🔧</span>
+          <span class="dmg-text">
+            <span class="dmg-name">Capó</span>
+            <span class="dmg-price-tag">+₡55,000</span>
+          </span>
+          <span class="dmg-checkmark">✓</span>
+        </label>
+
+        <label for="dmg-aleta-der" class="damage-btn dmg-btn-aleta-der" aria-label="Aleta delantera derecha">
+          <span class="dmg-icon">🔧</span>
+          <span class="dmg-text">
+            <span class="dmg-name">Aleta Delantera Der.</span>
+            <span class="dmg-price-tag">+₡40,000</span>
+          </span>
+          <span class="dmg-checkmark">✓</span>
+        </label>
+
+        <label for="dmg-puerta-front-der" class="damage-btn dmg-btn-puerta-front-der" aria-label="Puerta delantera derecha">
+          <span class="dmg-icon">🔧</span>
+          <span class="dmg-text">
+            <span class="dmg-name">Puerta Delantera Der.</span>
+            <span class="dmg-price-tag">+₡45,000</span>
+          </span>
+          <span class="dmg-checkmark">✓</span>
+        </label>
+
+        <label for="dmg-puerta-rear-der" class="damage-btn dmg-btn-puerta-rear-der" aria-label="Puerta trasera derecha">
+          <span class="dmg-icon">🔧</span>
+          <span class="dmg-text">
+            <span class="dmg-name">Puerta Trasera Der.</span>
+            <span class="dmg-price-tag">+₡40,000</span>
+          </span>
+          <span class="dmg-checkmark">✓</span>
+        </label>
+
+        <label for="dmg-aleta-rear" class="damage-btn dmg-btn-aleta-rear" aria-label="Aleta trasera">
+          <span class="dmg-icon">🔧</span>
+          <span class="dmg-text">
+            <span class="dmg-name">Aleta Trasera</span>
+            <span class="dmg-price-tag">+₡42,000</span>
+          </span>
+          <span class="dmg-checkmark">✓</span>
+        </label>
+
+        <label for="dmg-maletero" class="damage-btn dmg-btn-maletero" aria-label="Maletero / Compuerta">
+          <span class="dmg-icon">🔧</span>
+          <span class="dmg-text">
+            <span class="dmg-name">Maletero / Compuerta</span>
+            <span class="dmg-price-tag">+₡48,000</span>
+          </span>
+          <span class="dmg-checkmark">✓</span>
+        </label>
+
+        <label for="dmg-parachoque-rear" class="damage-btn dmg-btn-parachoque-rear" aria-label="Parachoque trasero">
+          <span class="dmg-icon">🔧</span>
+          <span class="dmg-text">
+            <span class="dmg-name">Parachoque Trasero</span>
+            <span class="dmg-price-tag">+₡35,000</span>
+          </span>
+          <span class="dmg-checkmark">✓</span>
+        </label>
+      </section>
+
+    </aside>
+
+    <!-- ─────────────────────────────────────────────────────
+         ZONA B: MAIN — Vista gigante del vehículo
+         Contiene las imágenes superpuestas con Grid Overlay.
+         Cada car-block es un set completo de 3 imágenes.
+         ───────────────────────────────────────────────────── -->
+    <section class="zone-main" aria-label="Visualizador del vehículo">
+
+      <!-- Badge: nombre del modelo activo -->
+      <div class="model-badge" aria-live="polite">
+        <span class="model-badge-corolla">Corolla GR Sport</span>
+        <span class="model-badge-hilux">Hilux 4×4 Adventure</span>
+      </div>
+
+      <!-- Badge: ángulo activo -->
+      <div class="angle-badge" aria-live="polite">360° Vista</div>
+
+      <!-- Viewport del vehículo -->
+      <div class="car-viewport">
+
+        <!--
+          ═══════════════════════════════════════════════════
+          BLOQUE COROLLA GR — Grid Overlay
+          Las 3 imágenes están en el DOM simultáneamente,
+          superpuestas en la misma celda del grid (grid-area: 1/1).
+          La imagen activa tiene opacity:1, las demás opacity:0.
+          Transición 0.3s ease (requerimiento).
+          ═══════════════════════════════════════════════════
+        -->
+        <div class="car-images-stack car-block car-block-corolla" aria-label="Toyota Corolla GR">
+          
+          <!-- Overlay de color — background: var(--car-color) -->
+          <div class="car-color-overlay" aria-hidden="true"></div>
+
+          <!-- Vista frontal -->
+          <img
+            src="assets/img/corolla-gr-front.jpg"
+            alt="Toyota Corolla GR Sport 2024 — Vista Frontal"
+            class="car-image img-front active"
+            loading="eager"
+            draggable="false"
+          />
+
+          <!-- Vista lateral (perfil) -->
+          <img
+            src="assets/img/corolla-gr-side.jpg"
+            alt="Toyota Corolla GR Sport 2024 — Vista Lateral"
+            class="car-image img-side"
+            loading="lazy"
+            draggable="false"
+          />
+
+          <!-- Vista trasera -->
+          <img
+            src="assets/img/corolla-gr-rear.jpg"
+            alt="Toyota Corolla GR Sport 2024 — Vista Trasera"
+            class="car-image img-rear"
+            loading="lazy"
+            draggable="false"
+          />
+        </div>
+
+        <!--
+          ═══════════════════════════════════════════════════
+          BLOQUE HILUX 4X4 — Grid Overlay
+          Mismo mecanismo: 3 imágenes superpuestas, opacity
+          controlada por el radio button de ángulo activo.
+          ═══════════════════════════════════════════════════
+        -->
+        <div class="car-images-stack car-block car-block-hilux" aria-label="Toyota Hilux 4x4">
+
+          <!-- Overlay de color -->
+          <div class="car-color-overlay" aria-hidden="true"></div>
+
+          <!-- Vista frontal -->
+          <img
+            src="assets/img/hilux-4x4-front.jpg"
+            alt="Toyota Hilux 4x4 2024 — Vista Frontal"
+            class="car-image img-front active"
+            loading="lazy"
+            draggable="false"
+          />
+
+          <!-- Vista lateral (perfil) -->
+          <img
+            src="assets/img/hilux-4x4-side.jpg"
+            alt="Toyota Hilux 4x4 2024 — Vista Lateral"
+            class="car-image img-side"
+            loading="lazy"
+            draggable="false"
+          />
+
+          <!-- Vista trasera -->
+          <img
+            src="assets/img/hilux-4x4-rear.jpg"
+            alt="Toyota Hilux 4x4 2024 — Vista Trasera"
+            class="car-image img-rear"
+            loading="lazy"
+            draggable="false"
+          />
+        </div>
+
+      </div>
+      <!-- /car-viewport -->
+
+      <!-- Strip "Por qué elegirnos" ─────────────────────── -->
+      <div class="why-us-strip" role="complementary" aria-label="Ventajas de Auto Style CR">
+        <div class="why-item">
+          <span class="why-icon">🛡️</span>
+          <span class="why-text"><strong>Garantía</strong> 2 años</span>
+        </div>
+        <div class="why-item">
+          <span class="why-icon">🎨</span>
+          <span class="why-text"><strong>Pintura</strong> Premium Urethane</span>
+        </div>
+        <div class="why-item">
+          <span class="why-icon">⚡</span>
+          <span class="why-text"><strong>Entrega</strong> en 5–7 días</span>
+        </div>
+        <div class="why-item">
+          <span class="why-icon">🏆</span>
+          <span class="why-text"><strong>+2,000</strong> autos restaurados</span>
+        </div>
+        <div class="why-item">
+          <span class="why-icon">✅</span>
+          <span class="why-text"><strong>Certificado</strong> de calidad</span>
+        </div>
+      </div>
+
+    </section>
+    <!-- /zone-main -->
+
+    <!-- ─────────────────────────────────────────────────────
+         ZONA C: PANEL DERECHO — Resumen de cotización
+         ───────────────────────────────────────────────────── -->
+    <aside class="zone-panel" aria-label="Panel de cotización">
+
+      <div class="panel-header">
+        <h1 class="panel-title">Cotización</h1>
+        <p class="panel-subtitle">Auto Style CR · Pintura premium</p>
+      </div>
+
+      <!-- Detalles de la selección -->
+      <section class="section-block" aria-labelledby="quote-details-title">
+        <h2 id="quote-details-title" class="section-title">Detalle</h2>
+
+        <div class="quote-line">
+          <span class="quote-key">Vehículo</span>
+          <span class="quote-value">
+            <!-- Nombre dinámico según modelo seleccionado -->
+            <span class="model-badge-corolla">Corolla GR</span>
+            <span class="model-badge-hilux">Hilux 4×4</span>
+          </span>
+        </div>
+
+        <div class="quote-line">
+          <span class="quote-key">Color seleccionado</span>
+          <span class="quote-value">
+            <!--
+              Spans de nombre de color — se muestran/ocultan
+              según el radio de color activo via :checked ~.
+            -->
+            <span class="color-name-tag color-name-blanco">Blanco Perla</span>
+            <span class="color-name-tag color-name-negro">Negro Cromo</span>
+            <span class="color-name-tag color-name-rojo">Rojo Racing</span>
+            <span class="color-name-tag color-name-azul">Azul Zafiro</span>
+            <span class="color-name-tag color-name-gris">Gris Titanio</span>
+            <span class="color-name-tag color-name-dorado">Dorado Champán</span>
+            <span class="color-name-tag color-name-verde">Verde Oliva</span>
+            <span class="color-name-tag color-name-plata">Plata Metálico</span>
+          </span>
+        </div>
+
+        <div class="quote-line">
+          <span class="quote-key">Tipo de pintura</span>
+          <span class="quote-value">Premium Urethane</span>
+        </div>
+
+        <div class="quote-line">
+          <span class="quote-key">Capas</span>
+          <span class="quote-value">3 manos + barniz</span>
+        </div>
+
+        <div class="quote-line">
+          <span class="quote-key">Tiempo estimado</span>
+          <span class="quote-value">5–7 días hábiles</span>
+        </div>
+      </section>
+
+      <!-- Desglose de daños seleccionados -->
+      <section class="section-block" aria-labelledby="damage-breakdown-title">
+        <h2 id="damage-breakdown-title" class="section-title">Daños Seleccionados</h2>
+        <div class="damage-breakdown">
+          <!-- Nota cuando no hay daños marcados -->
+          <p class="no-damage-note">Sin zonas de daño seleccionadas</p>
+          <!-- Líneas de daño — aparecen via :checked ~ en extras.css -->
+          <div class="dmg-line dmg-line-parachoque-front">
+            <span class="dmg-line-name">Parachoque Delantero</span>
+            <span class="dmg-line-amount">₡35,000</span>
+          </div>
+          <div class="dmg-line dmg-line-capo">
+            <span class="dmg-line-name">Capó</span>
+            <span class="dmg-line-amount">₡55,000</span>
+          </div>
+          <div class="dmg-line dmg-line-aleta-der">
+            <span class="dmg-line-name">Aleta Delantera Der.</span>
+            <span class="dmg-line-amount">₡40,000</span>
+          </div>
+          <div class="dmg-line dmg-line-puerta-front-der">
+            <span class="dmg-line-name">Puerta Delantera Der.</span>
+            <span class="dmg-line-amount">₡45,000</span>
+          </div>
+          <div class="dmg-line dmg-line-puerta-rear-der">
+            <span class="dmg-line-name">Puerta Trasera Der.</span>
+            <span class="dmg-line-amount">₡40,000</span>
+          </div>
+          <div class="dmg-line dmg-line-aleta-rear">
+            <span class="dmg-line-name">Aleta Trasera</span>
+            <span class="dmg-line-amount">₡42,000</span>
+          </div>
+          <div class="dmg-line dmg-line-maletero">
+            <span class="dmg-line-name">Maletero / Compuerta</span>
+            <span class="dmg-line-amount">₡48,000</span>
+          </div>
+          <div class="dmg-line dmg-line-parachoque-rear">
+            <span class="dmg-line-name">Parachoque Trasero</span>
+            <span class="dmg-line-amount">₡35,000</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Servicios incluidos -->
+      <section class="section-block" aria-labelledby="services-title">
+        <h2 id="services-title" class="section-title">Servicios incluidos</h2>
+        <div class="services-grid">
+          <span class="service-chip">✦ Preparación</span>
+          <span class="service-chip">✦ Enderezado</span>
+          <span class="service-chip">✦ Pintura base</span>
+          <span class="service-chip">✦ Barniz UV</span>
+          <span class="service-chip">✦ Pulido</span>
+          <span class="service-chip">✦ Detailing</span>
+        </div>
+      </section>
+
+      <!-- Precio total — se actualiza según el color seleccionado -->
+      <section class="price-block" aria-labelledby="price-title">
+        <div id="price-title" class="price-label">Total estimado</div>
+        <div class="price-amount">
+          <span class="price-currency">₡</span>
+          <!--
+            Precios dinámicos: cada .price-tag se muestra/oculta
+            cuando su color correspondiente está checked.
+            Los colores premium tienen precio mayor.
+          -->
+          <span class="price-tag price-blanco">185,000</span>
+          <span class="price-tag price-negro">175,000</span>
+          <span class="price-tag price-rojo">215,000</span>
+          <span class="price-tag price-azul">210,000</span>
+          <span class="price-tag price-gris">180,000</span>
+          <span class="price-tag price-dorado">240,000</span>
+          <span class="price-tag price-verde">195,000</span>
+          <span class="price-tag price-plata">190,000</span>
+        </div>
+        <p class="price-note">*Precio incluye mano de obra y materiales. IVA incluido.</p>
+      </section>
+
+      <!-- Garantía -->
+      <div class="warranty-badge" role="note" aria-label="Garantía del servicio">
+        <span class="warranty-icon">🛡️</span>
+        <span class="warranty-text"><strong>Garantía 2 años</strong> en pintura y mano de obra. Certificado de calidad incluido.</span>
+      </div>
+
+      <!-- CTA -->
+      <a
+        href="tel:+50612345678"
+        class="cta-btn"
+        aria-label="Solicitar cita en Auto Style CR"
+      >
+        Solicitar cita ahora →
+      </a>
+
+      <!-- Divider -->
+      <div class="divider-text" aria-hidden="true">contacto</div>
+
+      <!-- Info de contacto -->
+      <section class="section-block" aria-labelledby="contact-title">
+        <h2 id="contact-title" class="section-title">Contacto</h2>
+        <div class="quote-line">
+          <span class="quote-key">📍 Ubicación</span>
+          <span class="quote-value">San José, CR</span>
+        </div>
+        <div class="quote-line">
+          <span class="quote-key">📞 Teléfono</span>
+          <span class="quote-value">+506 1234-5678</span>
+        </div>
+        <div class="quote-line">
+          <span class="quote-key">🕘 Horario</span>
+          <span class="quote-value">Lun–Sáb 8:00–18:00</span>
+        </div>
+      </section>
+
+      <!-- Sello de Calidad Certificada ───────────────────── -->
+      <div class="quality-seal-wrapper" role="img" aria-label="Auto Style CR — Calidad Certificada">
+        <div class="quality-seal">
+          <div class="seal-inner">
+            <span class="seal-star" aria-hidden="true">⭐</span>
+            <span class="seal-certified">Certificado</span>
+            <span class="seal-brand-name">Auto Style<br>CR</span>
+            <span class="seal-year">2009 – 2024</span>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+    <!-- /zone-panel -->
+
+    <!-- ─────────────────────────────────────────────────────
+         ZONA D: PALETA DE COLORES (BARRA INFERIOR)
+         Construida 100% con Flexbox.
+         grid-column: 1 / -1 — ocupa el 100% del ancho inferior.
+         
+         Requerimientos cumplidos:
+         ✓ display: flex (en palette.css)
+         ✓ justify-content: center
+         ✓ align-items: center
+         ✓ flex-wrap: wrap (responsividad intrínseca)
+         ✓ gap mínimo 8px
+         ✓ 8 muestras (> 6 requeridas) de <label> + <input>
+         ───────────────────────────────────────────────────── -->
+    <div class="zone-palette" role="region" aria-label="Paleta de colores de pintura">
+
+      <div class="palette-container">
+
+        <span class="palette-label" aria-hidden="true">Color de pintura</span>
+
+        <!--
+          Cada muestra es un <label> que envuelve (a través del atributo for)
+          un <input type="radio"> oculto. Al hacer clic en el label,
+          se activa el radio button correspondiente.
+          
+          El data-color-name es usado por el pseudo-elemento ::after
+          para mostrar el tooltip sin JavaScript.
+        -->
+
+        <!-- Muestra 1: Blanco Perla -->
+        <label
+          for="color-blanco"
+          class="color-swatch swatch-blanco"
+          data-color-name="Blanco Perla"
+          aria-label="Seleccionar color Blanco Perla"
+          role="radio"
+        ></label>
+
+        <!-- Muestra 2: Negro Cromo -->
+        <label
+          for="color-negro"
+          class="color-swatch swatch-negro"
+          data-color-name="Negro Cromo"
+          aria-label="Seleccionar color Negro Cromo"
+          role="radio"
+        ></label>
+
+        <!-- Muestra 3: Rojo Racing -->
+        <label
+          for="color-rojo"
+          class="color-swatch swatch-rojo"
+          data-color-name="Rojo Racing"
+          aria-label="Seleccionar color Rojo Racing"
+          role="radio"
+        ></label>
+
+        <!-- Muestra 4: Azul Zafiro -->
+        <label
+          for="color-azul"
+          class="color-swatch swatch-azul"
+          data-color-name="Azul Zafiro"
+          aria-label="Seleccionar color Azul Zafiro"
+          role="radio"
+        ></label>
+
+        <!-- Muestra 5: Gris Titanio -->
+        <label
+          for="color-gris"
+          class="color-swatch swatch-gris"
+          data-color-name="Gris Titanio"
+          aria-label="Seleccionar color Gris Titanio"
+          role="radio"
+        ></label>
+
+        <!-- Muestra 6: Dorado Champán -->
+        <label
+          for="color-dorado"
+          class="color-swatch swatch-dorado"
+          data-color-name="Dorado Champán"
+          aria-label="Seleccionar color Dorado Champán"
+          role="radio"
+        ></label>
+
+        <!-- Muestra 7: Verde Oliva (extra) -->
+        <label
+          for="color-verde"
+          class="color-swatch swatch-verde"
+          data-color-name="Verde Oliva"
+          aria-label="Seleccionar color Verde Oliva"
+          role="radio"
+        ></label>
+
+        <!-- Muestra 8: Plata Metálico (extra) -->
+        <label
+          for="color-plata"
+          class="color-swatch swatch-plata"
+          data-color-name="Plata Metálico"
+          aria-label="Seleccionar color Plata Metálico"
+          role="radio"
+        ></label>
+
+        <div class="palette-divider" aria-hidden="true"></div>
+
+        <!-- Nombre del color activo (dinámico via :checked ~) -->
+        <div class="color-name-display" aria-live="polite" aria-atomic="true">
+          <span class="color-name-tag color-name-blanco">Blanco Perla</span>
+          <span class="color-name-tag color-name-negro">Negro Cromo</span>
+          <span class="color-name-tag color-name-rojo">Rojo Racing</span>
+          <span class="color-name-tag color-name-azul">Azul Zafiro</span>
+          <span class="color-name-tag color-name-gris">Gris Titanio</span>
+          <span class="color-name-tag color-name-dorado">Dorado Champán</span>
+          <span class="color-name-tag color-name-verde">Verde Oliva</span>
+          <span class="color-name-tag color-name-plata">Plata Metálico</span>
+        </div>
+
+      </div>
+      <!-- /palette-container -->
+
+    </div>
+    <!-- /zone-palette -->
+
+  </div>
+  <!-- /app-wrapper -->
+
+  <!-- ════════════════════════════════════════════════════════
+       DOCK FLOTANTE DE REDES SOCIALES
+       Fijo en la esquina inferior derecha.
+       Se expande con :hover — cero JavaScript.
+       ════════════════════════════════════════════════════════ -->
+  <nav class="social-dock" aria-label="Redes sociales y contacto">
+
+    <!-- WhatsApp — CTA principal con pulso animado -->
+    <a
+      href="https://wa.me/50612345678?text=Hola%20Auto%20Style%20CR%2C%20me%20interesa%20una%20cotización"
+      class="social-btn social-whatsapp"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Contactar por WhatsApp"
+    >
+      <span class="social-icon" aria-hidden="true">💬</span>
+      <span class="social-label">WhatsApp</span>
+    </a>
+
+    <!-- Instagram -->
+    <a
+      href="https://instagram.com/autostylecr"
+      class="social-btn social-instagram"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Ver Instagram de Auto Style CR"
+    >
+      <span class="social-icon" aria-hidden="true">📸</span>
+      <span class="social-label">Instagram</span>
+    </a>
+
+    <!-- Facebook -->
+    <a
+      href="https://facebook.com/autostylecr"
+      class="social-btn social-facebook"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Ver Facebook de Auto Style CR"
+    >
+      <span class="social-icon" aria-hidden="true">👥</span>
+      <span class="social-label">Facebook</span>
+    </a>
+
+  </nav>
+  <!-- /social-dock -->
+
+  <!--
+    ═══════════════════════════════════════════════════════════
+    NOTA TÉCNICA FINAL — AUSENCIA DE JAVASCRIPT
+    ═══════════════════════════════════════════════════════════
+    Este archivo no contiene ni una sola línea de JavaScript.
+    Toda la interactividad es lograda mediante:
+    
+    1. Radio Button Hack: <input type="radio"> + <label for="">
+       Los inputs están antes del .app-wrapper en el DOM para
+       que el selector CSS `~` (hermano siguiente) funcione.
+    
+    2. Grid Overlay: Las imágenes usan grid-area: 1/1 para
+       superponerse. La visibilidad se controla con opacity.
+    
+    3. CSS Custom Properties: --car-color se sobreescribe en
+       .app-wrapper usando :checked ~ .app-wrapper { --car-color: ... }
+    
+    4. @keyframes floatIn: animación de entrada de la paleta
+       con delays escalonados para efecto cascada.
+    
+    5. Responsividad sin @media: CSS Grid con minmax() y
+       Flexbox con flex-wrap garantizan adaptabilidad intrínseca.
+    ═══════════════════════════════════════════════════════════
+  -->
+
+</body>
+</html>
