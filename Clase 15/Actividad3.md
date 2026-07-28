@@ -1,0 +1,1 @@
+Debería tocar solo un nodo del DOM real. No toca los 500 porque reconstruir o manipular el DOM real es una operación computacionalmente muy costosa; los frameworks usan un Virtual DOM o un sistema de reactividad fina para comparar cambios y aplicar únicamente la modificación exacta necesaria, evitando re-renderizados innecesarios y caídas de rendimiento.

@@ -1,0 +1,1 @@
+0 Lineas - Al estar usando un paradigma declarativo, la interfaz se actualiza de manera reactiva en función del estado; solo se tendria que guardar en la lista en un estado con useState y declararla en el JSX, dejando que el framework se encargue por completo de manipular el DOM a mano.
