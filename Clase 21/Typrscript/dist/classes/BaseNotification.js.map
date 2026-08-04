@@ -1,0 +1,1 @@
+{"version":3,"file":"BaseNotification.js","sourceRoot":"","sources":["../../src/classes/BaseNotification.ts"],"names":[],"mappings":";;;AAEA;IAEwB,SAAS;IACT,OAAO;IAF3B,YACoB,SAAiB,EACjB,OAAe;yBADf,SAAS;uBACT,OAAO;IACvB,CAAC;IAEK,eAAe,CAAC,IAAY;QAClC,OAAO,CAAC,GAAG,CAAC,UAAU,IAAI,IAAI,EAAE,CAAC,WAAW,EAAE,wBAAwB,IAAI,MAAM,IAAI,CAAC,SAAS,IAAI,CAAC,CAAC;IACxG,CAAC;CAEJ"}
