@@ -29,8 +29,7 @@ Este repositorio documenta, clase por clase, las actividades, prácticas y proye
 | [14.2](Clase%2014%20parte%202/) | Sintaxis moderna de JavaScript | Desestructuración, parámetros `rest`, operador `spread`, encadenamiento opcional y operador de fusión nula. |Completado |
 | [16](Clase%2016/) | Introducción a frameworks frontend | Programación declarativa, estado y Virtual DOM; criterios de selección entre Angular, React y Vue; herramientas complementarias y comparación Vite/Webpack. |Completado |
 | [17](Clase%2017/) | Frameworks y configuración frontend | Estado, renderizado declarativo y Virtual DOM; selección y ecosistema de frameworks; Vite, manejo de recursos, punto de montaje, ambientes, secretos y respuesta ante credenciales expuestas. |Completado |
-| [20](Clase%2020/) | Fundamentos de TypeScript | Tipado de variables, parámetros y retornos; funciones, clases, constructores, módulos y configuración estricta 
-del compilador. |Completado |
+| [20](Clase%2020/) | Fundamentos de TypeScript | Tipado de variables, parámetros y retornos; funciones, clases, constructores, módulos y configuración estricta del compilador. | Completado |
 | [21](Clase%2021/) | Programación orientada a objetos con TypeScript | Sistema de notificaciones con interfaz, clase abstracta, herencia, polimorfismo, propiedades de solo lectura y capa de servicio. |Completado|
 Tecnologías y herramientas utilizadas
 
